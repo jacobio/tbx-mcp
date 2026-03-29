@@ -11,10 +11,10 @@ Tinderbox attributes are accessed with the `$` prefix. Key built-in attributes:
 
 **Identity & Content**: $Name, $Text, $Path, $ID, $Container (set to move notes), $Prototype
 **Dates**: $Created, $Modified, $StartDate, $DueDate, $EndDate
-**Appearance**: $Color, $Badge, $Width, $Height, $Xpos, $Ypos, $Shape, $NameFont, $NameSize, $NameColor, $NameBold
+**Appearance**: $Color, $Badge, $Width, $Height, $Xpos, $Ypos, $Shape, $NameFont, $NameColor, $NameBold, $MapNameSize, $OutlineNameSize
 **Metrics**: $WordCount, $ChildCount, $DescendantCount, $SiblingOrder, $OutlineOrder, $OutlineDepth
 **Links**: $OutboundLinkCount, $InboundLinkCount, $PlainLinkCount, $WebLinkCount
-**Organization**: $Tags, $Checked, $Priority, $Status
+**Organization**: $Tags, $Checked
 **Behavior**: $IsAgent, $IsPrototype, $IsAlias, $ReadOnly
 **Agent-specific**: $AgentQuery, $AgentAction, $AgentPriority, $CleanupAction
 **Action-holding**: $Rule, $Edict, $OnAdd, $OnRemove, $OnVisit, $DisplayExpression, $HoverExpression
@@ -54,7 +54,7 @@ Expressions are read-only and return values. Use with the `evaluate` tool.
 - Numeric: `$WordCount > 500`
 - Date: `$Modified > date("today-1 week")`
 - Compound: `$Name.contains("Vienna") & $WordCount > 100`
-- OR: `$Tags.contains("urgent") | $Priority > 3`
+- OR: `$Tags.contains("urgent") | $Checked`
 - Negation: `!$Checked`
 - Container: `$Container=="/Projects"`
 - Prototype: `$Prototype=="Task"`

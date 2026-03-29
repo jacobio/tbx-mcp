@@ -8,18 +8,27 @@ module TinderboxMCP
 
     extend AppleScriptHelper
 
-    description "Return an image of the user's current view, typically a 2-dimensional diagram of the notes within a Tinderbox container."
+    description "Return an image of the user's current view, typically a 2-dimensional diagram of the notes within a Tinderbox container. Optionally navigate into a specific container before capturing."
     input_schema(
       properties: {
         document: {
           type: "string",
           description: "The name of the Tinderbox document"
+        },
+        container: {
+          type: "string",
+          description: "Path to a container to navigate into before capturing. The view will drill into this container and show its contents."
         }
       },
       required: ["document"]
     )
 
-    def self.call(document:, server_context:)
+    def self.call(document:, container: nil, server_context:)
+      # Navigate into the container if requested
+      if container
+        navigate_to_container(document, container)
+      end
+
       # Get the window ID for the target document.
       # Windows are at the application level, not the document level.
       script = <<~APPLESCRIPT
@@ -57,6 +66,29 @@ module TinderboxMCP
       end
     rescue StandardError => e
       MCP::Tool::Response.new([{ type: "text", text: "Error: #{e.message}" }], error: true)
+    end
+
+    private
+
+    # Navigate into a container by selecting a child note within it.
+    # select(this) on a child causes Tinderbox to drill into the container's view.
+    def self.navigate_to_container(document, container)
+      script = <<~APPLESCRIPT
+        tell application id "Cere"
+          tell #{doc_target(document)}
+            set containerRef to find note in it with path "#{esc(container)}"
+            set childNotes to every note of containerRef
+            if (count of childNotes) > 0 then
+              set childRef to item 1 of childNotes
+              act on childRef with "select(this)"
+            else
+              act on containerRef with "select(this)"
+            end if
+          end tell
+        end tell
+      APPLESCRIPT
+      run_applescript(script)
+      sleep 0.5
     end
 
   end

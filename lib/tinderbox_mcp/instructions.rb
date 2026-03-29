@@ -23,7 +23,7 @@ User-created attributes start with a capital letter: `$MyCustomAttr`. Create wit
 
 ## Expression Syntax
 
-Expressions are read-only and return values. Use with the `evaluate` tool.
+Expressions are read-only and return values. Use with the `evaluate` tool. For complete syntax details, use `get_reference(topic: "expressions")` or `get_reference(topic: "action-functions")`.
 
 ### Operators
 - **Arithmetic**: `+`, `-`, `*`, `/` (note: `%` is NOT modulo — use `mod(a,b)` instead)
@@ -63,7 +63,7 @@ Expressions are read-only and return values. Use with the `evaluate` tool.
 
 ## Action Code
 
-Actions perform mutations. Use with the `do` tool.
+Actions perform mutations. Use with the `do` tool. For complete syntax and available functions, use `get_reference(topic: "expressions")` or `get_reference(topic: "action-functions")`.
 
 ### Assignment
 - String value: `$Color="red"` or `$Text='some text'`

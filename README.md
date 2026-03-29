@@ -106,11 +106,39 @@ The server exposes detailed Tinderbox reference documentation as MCP resources. 
 
 ## Context-Aware Design
 
-The server is designed to use as little of the LLM's context window as possible:
+The server is designed to minimize context window consumption through a two-tier architecture:
 
-- **Always-present instructions**: A curated ~970 token quick reference covering expression syntax, key attributes, action code patterns, and common gotchas. This consumes less than **0.5%** of a 200K token context window.
-- **On-demand resources**: Five detailed reference documents (~16,500 tokens total) are exposed as MCP resources that the LLM can read only when it needs deeper reference — they carry zero cost when not loaded.
-- **Worst case**: Even with all resources loaded, the total is ~17,500 tokens — under **9%** of a 200K context window.
+### Always Present (~3,400 tokens, 1.7% of 200K)
+
+| Component | Tokens | % of 200K |
+|-----------|--------|-----------|
+| Server instructions (quick reference) | ~2,300 | 1.15% |
+| Tool definitions (9 tools) | ~1,130 | 0.57% |
+| **Total always present** | **~3,430** | **1.71%** |
+
+The instructions provide a curated quick reference covering expression syntax, 30+ key attributes, action code patterns, date format codes, and 11 common gotchas.
+
+### On-Demand Resources (~26,000 tokens, loaded only when needed)
+
+| Resource | Tokens | Content |
+|----------|--------|---------|
+| action-functions.md | ~8,250 | 300+ action functions by category |
+| export-codes.md | ~6,340 | 46 export template codes |
+| expressions.md | ~3,840 | Expression and action code syntax |
+| system-containers.md | ~3,210 | Prototypes, Templates, Hints, Composites |
+| action-attributes.md | ~2,770 | 12 action-holding attributes |
+| adornments.md | ~1,650 | Map adornments and smart adornments |
+| **Total all resources** | **~26,060** | |
+
+### Budget Summary
+
+| Scenario | Tokens | % of 200K |
+|----------|--------|-----------|
+| Baseline (instructions + tool defs) | ~3,430 | 1.7% |
+| Typical usage (+ 1-2 resources) | ~6,400-9,400 | 3-5% |
+| Maximum (all resources loaded) | ~29,490 | 14.7% |
+
+Even in the worst case with every resource loaded, the server stays under **15%** of a 200K context window — leaving over 170,000 tokens for the conversation.
 
 ## Running Tests
 

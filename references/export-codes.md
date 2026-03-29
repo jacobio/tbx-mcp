@@ -727,6 +727,37 @@ end tell
 
 ---
 
+## Poster Notes
+
+A **poster** note displays a rendered web view on its face in map view. The HTML is computed from a template note using export codes.
+
+### Setup
+1. Assign the **Poster** prototype: `$Prototype="Poster"` (add via `require("Prototypes")` if not installed)
+2. Create an HTML template note in `/Templates`
+3. Set `$PosterTemplate` to the template's path
+
+### Key Template Codes for Posters
+| Code | Description |
+|------|-------------|
+| `^value($ScreenWidth)^` | Poster width in pixels |
+| `^value($ScreenHeight)^` | Poster height in pixels |
+| `^text^` | The poster note's text content |
+| `^value($Name)^` | The poster note's title |
+| `^value($Attribute)^` | Any attribute of the poster note |
+
+### Sizing
+- `$Width` and `$Height` control the note dimensions in map view
+- 1 map unit = 32 pixels (e.g., `$Width=8` produces a 256px wide poster)
+
+### Visualization Libraries
+Posters work well with JavaScript visualization libraries embedded in the template HTML:
+- **Plotly** — charts and graphs
+- **Mermaid** — diagrams and flowcharts
+- **Chart.js** — canvas-based charts
+- Any library that renders in a web view
+
+---
+
 ## Cross-References
 
 - **[Action Functions](action-functions.md)** — Functions usable inside `^value()^`, `^if()^`, and `^action()^`

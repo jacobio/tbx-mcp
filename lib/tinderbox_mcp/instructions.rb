@@ -95,6 +95,32 @@ Tinderbox has NO `else if` or `elseif`. Only `if` and `if/else`:
 - `create(name)` — create child note
 - `linkFromOriginal()` — link alias to original
 
+## Map Adornments
+
+Adornments are visual background elements in Map view that sit behind all notes. Create with `create_note` using `kind: "adornment"`, then configure with `set_value` or `do`.
+
+**Key attributes**: `$Color`, `$Width`, `$Height`, `$Xpos`, `$Ypos`, `$Border`, `$BorderColor`, `$Opacity`, `$Shape`, `$Lock`, `$Sticky`, `$NameColor`, `$NameAlignment`
+
+**Smart adornments**: Set `$AgentQuery` on an adornment to auto-move matching notes onto it (scope: current map only, moves originals — not aliases like agents).
+
+**$OnAdd/$OnRemove**: Action code that fires when notes are moved onto/off the adornment. Use the `adornment` designator to reference the adornment itself: `$Color=$Color(adornment)`.
+
+**Sticky**: When `$Sticky` is true, notes overlapping the adornment move with it when dragged. **Lock**: `$Lock` prevents repositioning/resizing.
+
+**Dividers**: Set `$Width=0` for vertical line, `$Height=0` for horizontal line.
+
+**Gotchas**: Adornments are NOT containers (no children in outline), cannot be linked to/from, cannot be searched, and do not display `$Text` on their face (only `$Name`).
+
+## Poster Notes (Map View Visualizations)
+
+A poster note displays a rendered web view on its face in map view. To create one:
+- Assign the **Poster** prototype: `$Prototype="Poster"` (add it via `/Prototypes` if not installed)
+- Create an HTML **template note** in `/Templates` using export codes (e.g., `^value($ScreenWidth)` for width in pixels, `^value($ScreenHeight)` for height, `^text` for the note's text)
+- Set `$PosterTemplate` to the template note's path
+- Control size with `$Width` and `$Height` (1 unit = 32px)
+
+Posters work well with plotly, mermaid, chart.js, and other JavaScript visualization libraries.
+
 ## Note URLs
 
 Tinderbox notes can be referenced by URL using the `tinderbox://` scheme. The format is:
@@ -129,6 +155,7 @@ Notes can have a Prototype note (set via `$Prototype`). A note inherits attribut
 ## Available Reference Resources
 
 For detailed reference, these resources are available on-demand:
+- `tinderbox://ref/adornments` — Map adornments: smart adornments, sticky/lock, grids, dividers
 - `tinderbox://ref/expressions` — Full expression & action language syntax with examples
 - `tinderbox://ref/action-functions` — Catalog of 600+ action functions by category
 - `tinderbox://ref/action-attributes` — 12 action-holding attributes ($Rule, $AgentQuery, etc.)

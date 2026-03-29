@@ -152,15 +152,15 @@ Notes can have a Prototype note (set via `$Prototype`). A note inherits attribut
 10. **Text set after creation** — set text separately after `make new note`, not in creation properties.
 11. **Semicolons in paths** — the tools use `;` as delimiter. Note paths containing `;` cannot be used in multi-note parameters.
 
-## Available Reference Resources
+## Detailed Reference
 
-For detailed reference, these resources are available on-demand:
-- `tinderbox://ref/adornments` — Map adornments: smart adornments, sticky/lock, grids, dividers
-- `tinderbox://ref/expressions` — Full expression & action language syntax with examples
-- `tinderbox://ref/action-functions` — Catalog of 300+ action functions by category
-- `tinderbox://ref/action-attributes` — 12 action-holding attributes ($Rule, $AgentQuery, etc.)
-- `tinderbox://ref/system-containers` — Prototypes, Templates, Hints, and Composites
-- `tinderbox://ref/export-codes` — 46 ^caret^ export template codes
+For deeper reference, use the `get_reference` tool with one of these topics:
+- `adornments` — Map adornments: smart adornments, sticky/lock, grids, dividers
+- `expressions` — Full expression & action code syntax with examples
+- `action-functions` — Catalog of 300+ action code functions by category
+- `action-attributes` — 12 action-holding attributes ($Rule, $AgentQuery, etc.)
+- `system-containers` — Prototypes, Templates, Hints, and Composites
+- `export-codes` — 46 ^caret^ export template codes
       INSTRUCTIONS
     end
 

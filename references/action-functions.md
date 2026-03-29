@@ -1,10 +1,12 @@
 # Tinderbox Action Code Functions Reference
 
-Comprehensive catalog of Tinderbox action code functions usable in `evaluate` and `act on` via AppleScript. Organized by category with AppleScript examples for key functions.
+> Examples include the required `document` parameter. Replace `"MyDoc"` with your document name.
 
-**Calling pattern**: `evaluate noteRef with "expression"` for reading, `act on noteRef with "action"` for writing.
+Comprehensive catalog of Tinderbox action code functions usable via the `evaluate` and `do` MCP tools. Organized by category with MCP tool call examples for key functions.
 
-**Live-tested discoveries** are marked with a test tube icon and documented in `scripts/test-action-code.sh`.
+**Calling pattern**: `evaluate(document: "MyDoc", expression: "expression", note: "/path/to/note")` for reading, `do(document: "MyDoc", action: "action code", note: "/path/to/note")` for writing.
+
+**Live-tested discoveries** are marked with a test tube icon.
 
 ---
 
@@ -25,20 +27,20 @@ Comprehensive catalog of Tinderbox action code functions usable in `evaluate` an
 |----------|---------|-------------|
 | `.contains(regex)` | **Position** (1-based int) or `0` | Substring/regex search |
 | `.icontains(regex)` | Position or `0` | Case-insensitive contains |
-| `.beginsWith(str)` | Boolean | Starts with string |
-| `.endsWith(str)` | Boolean | Ends with string |
-| `.containsAnyOf(regexList)` | Boolean | Matches any pattern in list |
-| `.icontainsAnyOf(regexList)` | Boolean | Case-insensitive version |
+| `.beginsWith(str)` | `"true"` or `""` | Starts with string |
+| `.endsWith(str)` | `"true"` or `""` | Ends with string |
+| `.containsAnyOf(regexList)` | `"true"` or `""` | Matches any pattern in list |
+| `.icontainsAnyOf(regexList)` | `"true"` or `""` | Case-insensitive version |
 | `.find(str)` | Position | Find position of substring |
 | `.countOccurrencesOf(str)` | Number | Count occurrences |
-| `.empty()` | Boolean | Is empty string |
+| `.empty()` | `"true"` or `""` | Is empty string |
 
-> **Live-tested**: `.contains()` returns the **1-based character position** of the match, NOT `"true"/"false"`. Returns `0` when not found on strings. On sets, returns the 1-based item position or empty string when not found.
+> **Live-tested**: `.contains()` on strings returns the **1-based character position** of the match, NOT `"true"`/`""`. Returns `0` when not found. On sets, `.contains()` returns the 1-based item position or `""` (empty string) when not found.
 
-```applescript
--- .contains() returns position, not boolean
-set pos to evaluate noteRef with "$Name.contains(\"ACTION\")"
--- pos = "7" (1-based position), not "true"
+```
+// .contains() on strings returns position, not boolean
+evaluate(document: "MyDoc", expression: "$Name.contains(\"ACTION\")", note: "/path/to/note")
+// returns "7" (1-based position), not "true"
 ```
 
 ### Extraction/Modification
@@ -55,13 +57,13 @@ set pos to evaluate noteRef with "$Name.contains(\"ACTION\")"
 | `.split(regex)` | Split into list by delimiter/regex |
 | `.deleteCharacters(charSet)` | Remove specified characters |
 
-```applescript
--- Replace
-evaluate noteRef with "$Text.replace(\"World\",\"Earth\")"
--- Substring
-evaluate noteRef with "$Name.substr(0,5)"
--- Trim
-evaluate noteRef with "\" hello \".trim()"
+```
+// Replace
+evaluate(document: "MyDoc", expression: "$Text.replace(\"World\",\"Earth\")", note: "/path/to/note")
+// Substring
+evaluate(document: "MyDoc", expression: "$Name.substr(0,5)", note: "/path/to/note")
+// Trim
+evaluate(document: "MyDoc", expression: "\" hello \".trim()", note: "/path/to/note")
 ```
 
 ### Text Structure
@@ -166,12 +168,12 @@ For parsing structured text content progressively:
 
 > **Live-tested**: `max(a,b)` and `min(a,b)` as standalone 2-arg functions do NOT work as value comparisons — `max(10,20)` returns `"10"`. Use `.max`/`.min` on collected lists instead (see List Operators).
 
-```applescript
--- abs and round
-evaluate noteRef with "abs(-42)"    -- "42"
-evaluate noteRef with "round(3.7)"  -- "4"
-evaluate noteRef with "mod(17,5)"   -- "2"
-evaluate noteRef with "(10+20)*2"   -- "60"
+```
+// abs and round
+evaluate(document: "MyDoc", expression: "abs(-42)", note: "/path/to/note")    # "42"
+evaluate(document: "MyDoc", expression: "round(3.7)", note: "/path/to/note")   # "4"
+evaluate(document: "MyDoc", expression: "mod(17,5)", note: "/path/to/note")    # "2"
+evaluate(document: "MyDoc", expression: "(10+20)*2", note: "/path/to/note")    # "60"
 ```
 
 ### Arithmetic Operators
@@ -201,13 +203,13 @@ evaluate noteRef with "(10+20)*2"   -- "60"
 
 ### Creation
 
-```applescript
-evaluate noteRef with "date(\"today\")"
-evaluate noteRef with "date(\"now\")"
-evaluate noteRef with "date(\"yesterday\")"
-evaluate noteRef with "date(\"tomorrow\")"
-evaluate noteRef with "date(\"next week\")"
-evaluate noteRef with "date(\"2025-03-15\")"
+```
+evaluate(document: "MyDoc", expression: "date(\"today\")", note: "/path/to/note")
+evaluate(document: "MyDoc", expression: "date(\"now\")", note: "/path/to/note")
+evaluate(document: "MyDoc", expression: "date(\"yesterday\")", note: "/path/to/note")
+evaluate(document: "MyDoc", expression: "date(\"tomorrow\")", note: "/path/to/note")
+evaluate(document: "MyDoc", expression: "date(\"next week\")", note: "/path/to/note")
+evaluate(document: "MyDoc", expression: "date(\"2025-03-15\")", note: "/path/to/note")
 ```
 
 ### Date Dot Operators
@@ -224,22 +226,22 @@ evaluate noteRef with "date(\"2025-03-15\")"
 | `.weekday` or `.weekday()` | Number | 1=Monday through 7=Sunday |
 | `.format(formatStr)` | String | Format date |
 
-```applescript
-evaluate noteRef with "$Created.day"                 -- "11"
-evaluate noteRef with "$Created.year"                -- "2026"
-evaluate noteRef with "date(\"today\").format(\"y\")"    -- "2026"
-evaluate noteRef with "$Created.format(\"y-MM-dd\")"   -- "2026-02-11"
+```
+evaluate(document: "MyDoc", expression: "$Created.day", note: "/path/to/note")                  # "11"
+evaluate(document: "MyDoc", expression: "$Created.year", note: "/path/to/note")                 # "2026"
+evaluate(document: "MyDoc", expression: "date(\"today\").format(\"y\")", note: "/path/to/note")     # "2026"
+evaluate(document: "MyDoc", expression: "$Created.format(\"y-M0-D0\")", note: "/path/to/note")     # "2026-02-11"
 ```
 
 ### Date Comparison
 
-> **Live-tested**: Boolean comparisons return `"true"` for true and **empty string** `""` for false.
+> **Live-tested**: Comparisons return `"true"` for true and `""` (empty string) for false.
 
-```applescript
-evaluate noteRef with "date(\"today\")==date(\"today\")"     -- "true"
-evaluate noteRef with "date(\"today\")!=date(\"yesterday\")"  -- "true"
-evaluate noteRef with "$Created > date(\"yesterday\")"       -- "true"
-evaluate noteRef with "$Created < date(\"now\")"             -- "true" or "" (same-second)
+```
+evaluate(document: "MyDoc", expression: "date(\"today\")==date(\"today\")", note: "/path/to/note")       # "true"
+evaluate(document: "MyDoc", expression: "date(\"today\")!=date(\"yesterday\")", note: "/path/to/note")   # "true"
+evaluate(document: "MyDoc", expression: "$Created > date(\"yesterday\")", note: "/path/to/note")         # "true"
+evaluate(document: "MyDoc", expression: "$Created < date(\"now\")", note: "/path/to/note")               # "true" or ""
 ```
 
 ### Standalone Date Functions
@@ -300,7 +302,7 @@ Sets are unordered with unique values (auto-deduplicated). Lists preserve order 
 |----------|---------|-------------|
 | `.count` or `.count()` | Number | Item count |
 | `.size` or `.size()` | Number | Character count |
-| `.empty()` | Boolean | Is empty |
+| `.empty()` | `"true"` or `""` | Is empty |
 
 ### Search
 
@@ -308,20 +310,20 @@ Sets are unordered with unique values (auto-deduplicated). Lists preserve order 
 |----------|---------|-------------|
 | `.contains(str)` | **Position** (1-based) or `""` | Find item |
 | `.icontains(str)` | Position or `""` | Case-insensitive find |
-| `.containsAnyOf(regexList)` | Boolean | Match any pattern |
-| `.icontainsAnyOf(regexList)` | Boolean | Case-insensitive version |
+| `.containsAnyOf(regexList)` | `"true"` or `""` | Match any pattern |
+| `.icontainsAnyOf(regexList)` | `"true"` or `""` | Case-insensitive version |
 | `.countOccurrencesOf(str)` | Number | Count occurrences |
 | `.lookup(key)` | Value | Key=value lookup |
 
-> **Live-tested**: Set `.contains()` returns the **1-based item position** if found, **empty string** if not found.
+> **Live-tested**: Set `.contains()` returns the **1-based item position** if found, `""` (empty string) if not found.
 
-```applescript
--- Set operations
-act on noteRef with "$Tags=\"alpha;beta;gamma\""
-act on noteRef with "$Tags+=\"delta\""          -- append
-act on noteRef with "$Tags-=\"beta\""            -- remove
-evaluate noteRef with "$Tags.contains(\"delta\")" -- "3" (position)
-evaluate noteRef with "$Tags.contains(\"omega\")" -- "" (not found)
+```
+// Set operations
+do(document: "MyDoc", action: "$Tags=\"alpha;beta;gamma\"", note: "/path/to/note")
+do(document: "MyDoc", action: "$Tags+=\"delta\"", note: "/path/to/note")            # append
+do(document: "MyDoc", action: "$Tags-=\"beta\"", note: "/path/to/note")             # remove
+evaluate(document: "MyDoc", expression: "$Tags.contains(\"delta\")", note: "/path/to/note")  # "3" (position)
+evaluate(document: "MyDoc", expression: "$Tags.contains(\"omega\")", note: "/path/to/note")  # "" (not found)
 ```
 
 ### Transform
@@ -351,10 +353,10 @@ evaluate noteRef with "$Tags.contains(\"omega\")" -- "" (not found)
 
 > **Live-tested**: `.max` and `.min` work on collected lists: `collect(children,$Width).max` returns `"30"`.
 
-```applescript
--- Collection aggregation via collect + list operators
-evaluate rootRef with "collect(children,$Width).max"  -- "30"
-evaluate rootRef with "collect(children,$Width).min"  -- "10"
+```
+// Collection aggregation via collect + list operators
+evaluate(document: "MyDoc", expression: "collect(children,$Width).max", note: "/path/to/note")  # "30"
+evaluate(document: "MyDoc", expression: "collect(children,$Width).min", note: "/path/to/note")  # "10"
 ```
 
 ### Functional
@@ -377,11 +379,11 @@ evaluate rootRef with "collect(children,$Width).min"  -- "10"
 | `.format(delimiter)` | Join with delimiter |
 | `.format(prefix,itemPrefix,itemSuffix,suffix)` | Custom formatting |
 
-### Assignment Operators (act on only)
+### Assignment Operators (the `do` tool only)
 
-```applescript
-act on noteRef with "$Tags+=\"newtag\""   -- append
-act on noteRef with "$Tags-=\"oldtag\""   -- remove
+```
+do(document: "MyDoc", action: "$Tags+=\"newtag\"", note: "/path/to/note")   # append
+do(document: "MyDoc", action: "$Tags-=\"oldtag\"", note: "/path/to/note")   # remove
 ```
 
 ---
@@ -466,18 +468,18 @@ Only works with `$Text` attribute:
 
 ## 10. Note/Tree/Link Operators (~25)
 
-### Creation (act on only)
+### Creation (the `do` tool only)
 
 | Function | Description |
 |----------|-------------|
 | `create(name)` | Create child note (see path syntax below) |
-| `createAgent(name,query)` | Create child agent |
+| `createAgent([container,] name)` | Create agent (set $AgentQuery separately) |
 | `createAlias(path)` | Create alias |
 | `createAdornment(name)` | Create adornment |
 | `createAttribute(name,type)` | Create user attribute |
 | `createLink(source,dest,type)` | Create link |
 
-### Links (act on only)
+### Links (the `do` tool only)
 
 | Function | Description |
 |----------|-------------|
@@ -491,47 +493,47 @@ Only works with `$Text` attribute:
 | `unlinkToOriginal(path)` | Unlink to alias original |
 | `unlinkFromOriginal(path)` | Unlink from alias original |
 
-### Navigation (evaluate)
+### Navigation (the `evaluate` tool)
 
 | Function | Returns | Description |
 |----------|---------|-------------|
-| `descendedFrom(path)` | Boolean | Is descendant of note |
-| `inside(path)` | Boolean | Is inside container |
-| `first()` | Note | First child |
-| `last()` | Note | Last child |
-| `distance(path)` | Number | Tree distance |
+| `descendedFrom(path)` | `"true"` or `""` | Is descendant of note |
+| `inside(path)` | `"true"` or `""` | Is inside container |
+| `first(item[, childrenNum])` | Note | First child |
+| `last(item[, childrenNum])` | Note | Last child |
+| `distance(startItem, endItem)` | Number | Tree distance between two notes |
 | `distanceTo(path)` | Number | Map distance |
 
-### Query (evaluate)
+### Query (the `evaluate` tool)
 
 | Function | Returns | Description |
 |----------|---------|-------------|
 | `find(condition)` | Group | Find matching notes |
 | `similarTo(path)` | List | Similar notes |
-| `neighbors()` | Group | Nearby notes (map) |
-| `neighborsWithin(dist)` | Group | Notes within distance |
+| `neighbors(scope, distanceNum[, linkTypeStr])` | Group | Nearby notes (map) |
+| `neighborsWithin(scope, distanceNum[, linkTypeStr])` | Group | Notes within distance |
 
 ### `create()` Path Syntax
 
 > **Live-tested**: `create()` accepts absolute paths from the document root. Intermediate containers are auto-created if they don't exist.
 
-```applescript
--- Create at absolute path (intermediate containers auto-created)
-act on noteRef with "create(\"/Hints/Highlighters/MyHighlighter\")"
+```
+// Create at absolute path (intermediate containers auto-created)
+do(document: "MyDoc", action: "create(\"/Hints/Highlighters/MyHighlighter\")", note: "/path/to/note")
 
--- Create relative child
-act on noteRef with "create(\"ChildName\")"
+// Create relative child
+do(document: "MyDoc", action: "create(\"ChildName\")", note: "/path/to/note")
 
--- Set attributes on path-created notes using $Attr("/path") syntax
-act on noteRef with "$Text(\"/Hints/Highlighters/MyHighlighter\")=\"content here\""
-act on noteRef with "$Color(\"/Prototypes/Task\")=\"blue\""
+// Set attributes on path-created notes using $Attr("/path") syntax
+do(document: "MyDoc", action: "$Text(\"/Hints/Highlighters/MyHighlighter\")=\"content here\"", note: "/path/to/note")
+do(document: "MyDoc", action: "$Color(\"/Prototypes/Task\")=\"blue\"", note: "/path/to/note")
 ```
 
-### Deletion (act on only)
+### Deletion (the `do` tool only)
 
 | Function | Description |
 |----------|-------------|
-| `delete()` | Delete current note |
+| `delete(scope)` | Delete note(s) specified by scope |
 
 ---
 
@@ -543,28 +545,30 @@ These operate on groups of notes (children, descendants, siblings, find results)
 |----------|---------|-------------|
 | `collect(scope, expr)` | List | Collect expression from scope |
 | `collect_if(scope, cond, expr)` | List | Conditional collect |
-| `count(scope[,cond])` | Number | Count notes |
+| `count(scope)` | Number | Count notes in scope (for children use `$ChildCount` instead) |
+| `count_if(scope, cond)` | Number | Conditional count |
 | `sum(scope, expr)` | Number | Sum expression across scope |
 | `avg(scope, expr)` | Number | Average expression |
 | `min(scope, expr)` | Value | Minimum (see note below) |
 | `max(scope, expr)` | Value | Maximum (see note below) |
-| `any(scope, cond)` | Boolean | Any note matches? |
-| `every(scope, cond)` | Boolean | All notes match? |
+| `any(scope, cond)` | `"true"` or `""` | Any note matches? |
+| `every(scope, cond)` | `"true"` or `""` | All notes match? |
 | `values(scope, attr)` | List | Unique values of attribute |
 
 > **Live-tested**: `collect()` returns results as a **bracket-wrapped semicolon-separated list**: `[item1;item2;item3]`. Use `collect(children,$Name)` and parse the result.
 
-> **Live-tested**: `sum(children,$Width)` and `avg(children,$Width)` work correctly. `count(children)` without a condition returns `"1"` — use `$ChildCount` instead for counting children.
+> **Live-tested**: `sum(children,$Width)` and `avg(children,$Width)` work correctly. `count(children)` without a condition returns `"1"` -- use `$ChildCount` instead for counting children. Use `count_if(scope, condition)` for conditional counting.
 
 > **Live-tested**: `collect_if(children,$Width>15,$Name)` works correctly, returning only matching items.
 
-```applescript
--- Collection examples
-evaluate rootRef with "collect(children,$Name)"              -- "[A;B;C]"
-evaluate rootRef with "sum(children,$Width)"                 -- "60"
-evaluate rootRef with "avg(children,$Width)"                 -- "20"
-evaluate rootRef with "$ChildCount"                          -- "3" (use this for counting)
-evaluate rootRef with "collect_if(children,$Width>15,$Name)" -- "[B;C]"
+```
+// Collection examples
+evaluate(document: "MyDoc", expression: "collect(children,$Name)", note: "/path/to/note")              # "[A;B;C]"
+evaluate(document: "MyDoc", expression: "sum(children,$Width)", note: "/path/to/note")                 # "60"
+evaluate(document: "MyDoc", expression: "avg(children,$Width)", note: "/path/to/note")                 # "20"
+evaluate(document: "MyDoc", expression: "$ChildCount", note: "/path/to/note")                          # "3" (use this for counting children)
+evaluate(document: "MyDoc", expression: "collect_if(children,$Width>15,$Name)", note: "/path/to/note")  # "[B;C]"
+evaluate(document: "MyDoc", expression: "count_if(children,$Width>15)", note: "/path/to/note")          # "2"
 ```
 
 ---
@@ -579,24 +583,24 @@ evaluate rootRef with "collect_if(children,$Width>15,$Name)" -- "[B;C]"
 | `action(codeStr)` | Execute action code string (returns `"true"` on success) |
 | `eval([item],expr)` | Evaluate expression |
 
-> **Live-tested**: `if/else` works in both `evaluate` (returns value) and `act on` (executes actions). Nested `if/else` also works.
+> **Live-tested**: `if/else` works in both the `evaluate` tool (returns value) and the `do` tool (executes action code). Nested `if/else` also works.
 
 > **Live-tested**: `action($Text)` executes a note's `$Text` as action code and returns `"true"` on success. Useful for "installer" notes where the action code payload lives in `$Text` and is triggered by `$Rule="action($Text);"`.
 
-```applescript
--- Execute note's text as action code
-act on noteRef with "action($Text)"
--- Or set as a rule
-act on noteRef with "$Rule=\"action($Text);\""
+```
+// Execute note's text as action code
+do(document: "MyDoc", action: "action($Text)", note: "/path/to/note")
+// Or set as a rule
+do(document: "MyDoc", action: "$Rule=\"action($Text);\"", note: "/path/to/note")
 ```
 
-```applescript
--- Conditional expression
-evaluate noteRef with "if($Width>15){\"big\"}else{\"small\"}"
--- Nested conditional
-evaluate noteRef with "if($Width>25){\"large\"}else{if($Width>15){\"medium\"}else{\"small\"}}"
--- Conditional action
-act on noteRef with "if($Width>15){$Badge=\"flag\"}else{$Badge=\"star\"}"
+```
+// Conditional expression
+evaluate(document: "MyDoc", expression: "if($Width>15){\"big\"}else{\"small\"}", note: "/path/to/note")
+// Nested conditional
+evaluate(document: "MyDoc", expression: "if($Width>25){\"large\"}else{if($Width>15){\"medium\"}else{\"small\"}}", note: "/path/to/note")
+// Conditional action code
+do(document: "MyDoc", action: "if($Width>15){$Badge=\"flag\"}else{$Badge=\"star\"}", note: "/path/to/note")
 ```
 
 ---
@@ -610,12 +614,12 @@ act on noteRef with "if($Width>15){$Badge=\"flag\"}else{$Badge=\"star\"}"
 | `escapeHTML(str)` | HTML entity encode |
 | `attributeEncode(str)` | Encode for attribute name |
 | `idEncode(str)` | Encode for ID |
-| `backslashEncode(str)` | Backslash escape |
+| `backslashEncode(str)` | Backslash escape (export code only: `^backslashEncode(data)^`) |
 
 > **Live-tested**: `urlEncode("hello world")` returns `"hello%20world"`.
 
-```applescript
-evaluate noteRef with "urlEncode(\"hello world\")"  -- "hello%20world"
+```
+evaluate(document: "MyDoc", expression: "urlEncode(\"hello world\")", note: "/path/to/note")  # "hello%20world"
 ```
 
 ---
@@ -656,44 +660,44 @@ evaluate noteRef with "urlEncode(\"hello world\")"  -- "hello%20world"
 | `"Preview"` | Shows the text pane selector above the text pane |
 | `"NoPreview"` | Hides the text pane selector above the text pane |
 
-```applescript
--- Ensure system containers exist
-act on noteRef with "require(\"Prototypes\")"
-act on noteRef with "require(\"Templates\")"
-act on noteRef with "require(\"Hints\")"
+```
+// Ensure system containers exist
+do(document: "MyDoc", action: "require(\"Prototypes\")", note: "/path/to/note")
+do(document: "MyDoc", action: "require(\"Templates\")", note: "/path/to/note")
+do(document: "MyDoc", action: "require(\"Hints\")", note: "/path/to/note")
 
--- Toggle text pane selector
-act on noteRef with "require(\"Preview\")"
-act on noteRef with "require(\"NoPreview\")"
+// Toggle text pane selector
+do(document: "MyDoc", action: "require(\"Preview\")", note: "/path/to/note")
+do(document: "MyDoc", action: "require(\"NoPreview\")", note: "/path/to/note")
 ```
 
 > Idempotent: calling `require()` when the container already exists has no effect.
 
 > See **[System Containers](system-containers.md)** for full details on all four built-in containers.
 
-### `update()` — Recompile Library Functions
+### `update()` -- Recompile Library Functions
 
-```applescript
--- Recompile a specific library note (required for newly created notes)
-act on noteRef with "update(\"/Hints/Library/MyFunctions\")"
+```
+// Recompile a specific library note (required for newly created notes)
+do(document: "MyDoc", action: "update(\"/Hints/Library/MyFunctions\")", note: "/path/to/note")
 
--- No-arg form only recompiles already-compiled notes (not newly created ones)
-act on noteRef with "update()"
+// No-arg form only recompiles already-compiled notes (not newly created ones)
+do(document: "MyDoc", action: "update()", note: "/path/to/note")
 ```
 
 > **Important:** `update()` without arguments does NOT compile newly created library notes. You must call `update("/Hints/Library/NoteName")` with the specific path to each new library note. Library notes must also have `$IsAction = true` to be recognized as action code.
 
-### `runCommand()` — Shell Execution
+### `runCommand()` -- Shell Execution
 
 > **Live-tested**: The second argument to `runCommand()` is piped as **stdin** to the command. This enables base64 decoding and other input-fed commands:
 
-```applescript
--- Decode base64-encoded text (2nd arg is piped as stdin)
-act on noteRef with "$Text=runCommand(\"base64 -D\",\"SGVsbG8gV29ybGQ=\")"
--- Result: $Text = "Hello World"
+```
+// Decode base64-encoded text (2nd arg is piped as stdin)
+do(document: "MyDoc", action: "$Text=runCommand(\"base64 -D\",\"SGVsbG8gV29ybGQ=\")", note: "/path/to/note")
+// Result: $Text = "Hello World"
 
--- Run command with working directory
-evaluate noteRef with "runCommand(\"ls\",\"\",$Path)"
+// Run command with working directory
+evaluate(document: "MyDoc", expression: "runCommand(\"ls\",\"\",$Path)", note: "/path/to/note")
 ```
 
 > **Pattern**: To embed complex multi-line text (regex patterns, special characters) inside action code without escaping issues, base64-encode the content and decode at runtime via `runCommand("base64 -D", "base64string")`.
@@ -704,21 +708,21 @@ evaluate noteRef with "runCommand(\"ls\",\"\",$Path)"
 
 > **Live-tested**: To reset an attribute to its prototype-inherited value, use `$Attr=;` (equals-semicolon with no value). This removes the local override and re-enables inheritance. Confirmed: `$Badge=;` restores the prototype's "star" value and `hasLocalValue("Badge")` returns false.
 
-```applescript
--- Prototype queries
-evaluate noteRef with "inheritsFrom(\"Task\")"       -- "true" or ""
-evaluate noteRef with "hasLocalValue(\"Badge\")"       -- "true" or ""
+```
+// Prototype queries
+evaluate(document: "MyDoc", expression: "inheritsFrom(\"Task\")", note: "/path/to/note")        # "true" or ""
+evaluate(document: "MyDoc", expression: "hasLocalValue(\"Badge\")", note: "/path/to/note")       # "true" or ""
 
--- Reset to inherited value (re-enable prototype inheritance)
-act on noteRef with "$Badge=;"   -- removes local override
--- NOT the same as $Badge="" which sets a local empty value
+// Reset to inherited value (re-enable prototype inheritance)
+do(document: "MyDoc", action: "$Badge=;", note: "/path/to/note")   # removes local override
+// NOT the same as $Badge="" which sets a local empty value
 ```
 
 ---
 
 ## 15. Designators
 
-Designators reference notes relative to the current context in expressions and actions.
+Designators reference notes relative to the current context in expressions and action code.
 
 ### Item Designators (single note)
 
@@ -772,21 +776,21 @@ Designators reference notes relative to the current context in expressions and a
 
 ### Expanded Syntax
 
-```applescript
--- Access attribute of another note via designator
-evaluate noteRef with "$Name(parent)"     -- parent's name
-evaluate noteRef with "$Color(child[0])"  -- first child's color
+```
+// Access attribute of another note via designator
+evaluate(document: "MyDoc", expression: "$Name(parent)", note: "/path/to/note")     # parent's name
+evaluate(document: "MyDoc", expression: "$Color(child[0])", note: "/path/to/note")  # first child's color
 
--- Path-based access
-evaluate noteRef with "$Name(\"/path/to/note\")"
+// Path-based access
+evaluate(document: "MyDoc", expression: "$Name(\"/path/to/note\")", note: "/path/to/note")
 
--- Named note access
-evaluate noteRef with "$Name(\"Some Note\")"
+// Named note access
+evaluate(document: "MyDoc", expression: "$Name(\"Some Note\")", note: "/path/to/note")
 ```
 
 > **Live-tested**: `$Name(parent)` works correctly, returning the parent note's name.
 
-> **Live-tested**: `find()` in evaluate works: `collect(find($Name.contains("prefix")),$Name)` returns all matching note names.
+> **Live-tested**: `find()` in the `evaluate` tool works: `collect(find($Name.contains("prefix")),$Name)` returns all matching note names.
 
 ---
 
@@ -817,16 +821,16 @@ evaluate noteRef with "$Name(\"Some Note\")"
 >
 > This applies to comparison operators (`==`, `!=`, `>`, `<`, `>=`, `<=`) and functions like `inheritsFrom()`, `hasLocalValue()`.
 >
-> Exception: `.contains()` on strings returns a **numeric position** (1-based), not a boolean. On sets, `.contains()` returns a position or empty string.
+> Exception: `.contains()` on strings returns a **numeric position** (1-based) or `0`, not a boolean. On sets, `.contains()` returns a 1-based position or `""` (empty string).
 
 ---
 
 ## Action Chaining
 
-Multiple actions can be separated by semicolons in a single `act on` call:
+Multiple actions can be separated by semicolons in a single `do` tool call:
 
-```applescript
-act on noteRef with "$Badge=\"flag\";$Color=\"red\";$Width=25"
+```
+do(document: "MyDoc", action: "$Badge=\"flag\";$Color=\"red\";$Width=25", note: "/path/to/note")
 ```
 
 > **Live-tested**: Semicolon-separated action chaining works correctly.
@@ -840,11 +844,11 @@ Tinderbox action code does **NOT** support backslash-escaped quotes. `\"` does n
 To embed double quotes inside a string value, wrap them in single quotes and use `+` for concatenation:
 
 ```
--- WRONG -- backslash escaping fails silently
-$OnAdd="$Prototype=\"Code\";"
+// WRONG: backslash escaping fails silently
+// $OnAdd="$Prototype=\"Code\";"
 
--- RIGHT -- single quotes preserve the double quotes
-$OnAdd="$Prototype=" + '"Code";'
+// RIGHT: single quotes preserve the double quotes
+// $OnAdd="$Prototype=" + '"Code";'
 ```
 
 This is especially important when setting action-holding attributes (`$OnAdd`, `$Rule`, etc.) whose values themselves contain quoted strings.
@@ -853,7 +857,5 @@ This is especially important when setting action-holding attributes (`$OnAdd`, `
 
 ## Cross-References
 
-- **[AppleScript API Reference](applescript-api.md)** — AppleScript bridge layer: make, delete, move, evaluate, act on
-- **[Action-Holding Attributes](action-attributes.md)** — The 12 system attributes that hold executable action code
-- **[Expressions & Actions](expressions.md)** — Quick-reference for common patterns
-- **[Test Script](../scripts/test-action-code.sh)** — 18 live-validated tests
+- **[Action-Holding Attributes](action-attributes.md)** -- The 12 system attributes that hold executable action code
+- **[Expressions & Actions](expressions.md)** -- Quick-reference for common patterns

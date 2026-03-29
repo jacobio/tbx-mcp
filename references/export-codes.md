@@ -1,5 +1,7 @@
 # Tinderbox Export Codes Reference
 
+> Examples include the required `document` parameter. Replace `"MyDoc"` with your document name.
+
 Export codes are caret-delimited (`^code^`) functions used in Tinderbox export templates. They generate HTML, text, or structured output during export. Templates are special notes containing a mix of literal markup and export codes.
 
 **Syntax**: `^codeName(arguments)^` — always include the closing caret.
@@ -53,7 +55,7 @@ Export codes are caret-delimited (`^code^`) functions used in Tinderbox export t
 | `^siblings([start, prefix, suffix, end])^` | Link | Links to sibling notes |
 | `^similarTo(item, count[, start, prefix, suffix, end])^` | Link | Similar notes by content |
 | `^text([item][,N][,plain])^` | Include | Note body text |
-| `^title([item])^` | Include | Note title ($Name) |
+| `^title([item])^` | Include | Note title (`$Name`) |
 | `^url(item)^` | Link | Relative URL of exported page |
 | `^value(expression)^` | Include | Evaluate any expression |
 | `^version^` | Property | Tinderbox version number |
@@ -69,7 +71,7 @@ Used inside `^if()^` to test export-time conditions.
 
 #### `^nextSibling^`
 
-Returns true if the current note has an exportable next sibling.
+Returns `"true"` or `""` (empty string) depending on whether the current note has an exportable next sibling.
 
 ```html
 ^if(^nextSibling^)^<hr>^endIf^
@@ -77,7 +79,7 @@ Returns true if the current note has an exportable next sibling.
 
 #### `^previousSibling^`
 
-Returns true if the current note has an exportable previous sibling.
+Returns `"true"` or `""` (empty string) depending on whether the current note has an exportable previous sibling.
 
 ```html
 ^if(^previousSibling^)^<span class="prev">Previous</span>^endIf^
@@ -262,8 +264,8 @@ Evaluates any Tinderbox expression and outputs the result. This is the most comm
 ^value("Author: " + $Author)^
 
 <!-- Date formatting -->
-^value($Created.format("y-MM-dd"))^
-^value($Modified.format("EEEE, MMMM d, y"))^
+^value($Created.format("y-M0-D0"))^
+^value($Modified.format("W, MM D0, y"))^
 
 <!-- Collection operations -->
 ^value(collect(children,$Name).format(", "))^
@@ -468,7 +470,7 @@ Templates are special notes containing export codes mixed with literal markup. A
   <nav>^ancestors("", "", " &gt; ", "")^</nav>
   <h1>^title^</h1>
   <div class="meta">
-    <span>Created: ^value($Created.format("y-MM-dd"))^</span>
+    <span>Created: ^value($Created.format("y-M0-D0"))^</span>
     ^if($Tags!="")^
     <span>Tags: ^value($Tags)^</span>
     ^endIf^
@@ -493,7 +495,7 @@ Templates are special notes containing export codes mixed with literal markup. A
 Templates are not limited to HTML — use them for any text format:
 
 ```
-^value($Name)^	^value($Created.format("y-MM-dd"))^	^value($Tags)^
+^value($Name)^	^value($Created.format("y-M0-D0"))^	^value($Tags)^
 ```
 
 ### JSON Export
@@ -501,7 +503,7 @@ Templates are not limited to HTML — use them for any text format:
 ```json
 {
   "title": "^backslashEncode(^value($Name)^)^",
-  "created": "^value($Created.format("y-MM-dd'T'HH:mm:ss"))^",
+  "created": "^value($Created.format("y-M0-D0"))^",
   "tags": [^value(collect(children,$Name).collect(x,'"'+x+'"').format(","))^],
   "text": "^backslashEncode(^value($Text)^)^"
 }
@@ -529,10 +531,10 @@ Templates are not limited to HTML — use them for any text format:
 **List formatting parameters** (for link codes):
 
 ```
-start            — before all items (default: "<ul>")
-list-item-prefix — before each item (default: "<li>")
-list-item-suffix — after each item (default: "</li>")
-end              — after all items (default: "</ul>")
+start            # before all items (default: "<ul>")
+list-item-prefix # before each item (default: "<li>")
+list-item-suffix # after each item (default: "</li>")
+end              # after all items (default: "</ul>")
 ```
 
 ---
@@ -559,36 +561,26 @@ end              — after all items (default: "</ul>")
 | `$HTMLExportExtension` | string | File extension (default: "html") |
 | `$HTMLDontExport` | boolean | Exclude from export |
 | `$HTMLMarkupText` | boolean | When `true` (default), `^text^` converts styled text to HTML (`<p>`, `<strong>`, etc.). When `false`, `^text^` outputs raw text without any HTML tags — use for code/CSS assets. |
-| `$HTMLQuoteHTML` | boolean | Escape HTML entities in $Text |
+| `$HTMLQuoteHTML` | boolean | Escape HTML entities in `$Text` |
 | `$TextExportTemplate` | string | Template for text export |
 
-Set via AppleScript:
-
-```applescript
-tell application id "Cere"
-	tell front document
-		act on noteRef with "$HTMLExportTemplate=\"my-template\""
-		act on noteRef with "$HTMLDontExport=true"
-	end tell
-end tell
+**MCP Example**:
+```
+set_value(document: "MyDoc", notes: "/path/to/note", attribute: "HTMLExportTemplate", value: "my-template")
+set_value(document: "MyDoc", notes: "/path/to/note", attribute: "HTMLDontExport", value: "true")
 ```
 
 ---
 
-## Using Export Codes via AppleScript
+## Using Export Codes via MCP Tools
 
-Export codes are designed for the export pipeline, not direct AppleScript evaluation. However, `exportedString()` can evaluate a template against a note:
+Export codes are designed for the export pipeline, not direct evaluation. However, `exportedString()` can evaluate a template against a note:
 
-```applescript
-tell application id "Cere"
-	tell front document
-		-- Evaluate a template on a note
-		evaluate noteRef with "exportedString(this,\"template-name\")"
-	end tell
-end tell
+```
+evaluate(document: "MyDoc", expression: "exportedString(this,\"template-name\")", note: "/path/to/note")
 ```
 
-The `^value()^` export code is equivalent to `evaluate` in AppleScript — both evaluate Tinderbox expressions. The difference is context: `^value()^` runs during export, `evaluate` runs from AppleScript.
+The `^value()^` export code is equivalent to the `evaluate` tool — both evaluate Tinderbox expressions. The difference is context: `^value()^` runs during export, the `evaluate` tool runs via the MCP tool.
 
 ---
 
@@ -598,27 +590,18 @@ The `^value()^` export code is equivalent to `evaluate` in AppleScript — both 
 
 A note becomes a template when `$IsTemplate=true`. Templates are conventionally stored in a root-level "Templates" container whose `$OnAdd` sets `$IsTemplate=true` automatically.
 
-### Creating Templates via AppleScript
+### Creating Templates via MCP Tools
 
-```applescript
-tell application id "Cere"
-	tell front document
-		-- Ensure Templates container exists
-		if not (exists note "Templates") then
-			set templatesContainer to make new note with properties {name:"Templates"}
-			act on templatesContainer with "$OnAdd=\"$IsTemplate=true\""
-		end if
-		set templatesContainer to note "Templates"
+```
+// Ensure Templates container exists
+do(document: "MyDoc", action: "require(\"Templates\")", note: "/")
 
-		-- Create a template note
-		set tmpl to make new note at templatesContainer with properties {name:"my-template"}
-		act on tmpl with "$IsTemplate=true"
-		set text of tmpl to "<html><head><title>^title^</title></head><body>^text^</body></html>"
+// Create a template note
+create_note(document: "MyDoc", name: "my-template", container: "/Templates", text: "<html><head><title>^title^</title></head><body>^text^</body></html>")
+set_value(document: "MyDoc", notes: "/Templates/my-template", attribute: "IsTemplate", value: "true")
 
-		-- Assign template to a note
-		act on noteRef with "$HTMLExportTemplate=\"/Templates/my-template\""
-	end tell
-end tell
+// Assign template to a note
+set_value(document: "MyDoc", notes: "/path/to/note", attribute: "HTMLExportTemplate", value: "/Templates/my-template")
 ```
 
 ### Built-in Templates
@@ -652,7 +635,7 @@ Note to export
 | Attribute | Type | Description |
 |-----------|------|-------------|
 | `$HTMLExportTemplate` | string | Path to template note |
-| `$HTMLExportFileName` | string | Custom filename (auto-derived from $Name if empty) |
+| `$HTMLExportFileName` | string | Custom filename (auto-derived from `$Name` if empty) |
 | `$HTMLExportExtension` | string | File extension (default: ".html") |
 | `$HTMLExportPath` | string | Computed full OS path (read-only) |
 | `$HTMLExportFileNameSpacer` | string | Character replacing spaces in filenames |
@@ -699,15 +682,11 @@ These system attributes hold **paths** (`$Path`) to template notes. They tell Ti
 | `$RSSItemTemplate` | string | Path to RSS item template note |
 | `$PosterTemplate` | string | Path to poster template note |
 
-```applescript
-tell application id "Cere"
-	tell front document
-		-- Assign HTML template to a note
-		act on noteRef with "$HTMLExportTemplate=\"/Templates/my-template\""
-		-- Read back
-		set tmpl to evaluate noteRef with "$HTMLExportTemplate"
-	end tell
-end tell
+```
+// Assign HTML template to a note
+set_value(document: "MyDoc", notes: "/path/to/note", attribute: "HTMLExportTemplate", value: "/Templates/my-template")
+// Read back
+evaluate(document: "MyDoc", expression: "$HTMLExportTemplate", note: "/path/to/note")
 ```
 
 #### Template Status
@@ -722,7 +701,7 @@ end tell
 |-----------|------|-------------|
 | `$HTMLMarkdown` | boolean | Enable Markdown processing |
 | `$HTMLMarkupText` | boolean | When `true` (default), `^text^` converts styled text to HTML. When `false`, `^text^` outputs raw text — use for code/CSS/JS assets. |
-| `$HTMLQuoteHTML` | boolean | Escape HTML entities in $Text |
+| `$HTMLQuoteHTML` | boolean | Escape HTML entities in `$Text` |
 | `$HTMLEntities` | boolean | HTML entity encoding |
 
 ---

@@ -99,7 +99,7 @@ The server exposes detailed Tinderbox reference documentation as MCP resources. 
 |-------------|-------------|
 | `tinderbox://ref/adornments` | Map adornments: smart adornments, sticky/lock, grids, dividers |
 | `tinderbox://ref/expressions` | Expression and action language syntax with examples |
-| `tinderbox://ref/action-functions` | Catalog of 600+ action functions organized by category |
+| `tinderbox://ref/action-functions` | Catalog of 300+ action functions organized by category |
 | `tinderbox://ref/action-attributes` | 12 action-holding attributes ($Rule, $AgentQuery, $OnAdd, etc.) |
 | `tinderbox://ref/system-containers` | Built-in containers: Prototypes, Templates, Hints, Composites |
 | `tinderbox://ref/export-codes` | 46 ^caret^ export template codes for HTML/text export |

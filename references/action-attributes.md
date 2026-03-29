@@ -1,8 +1,10 @@
 # Tinderbox Action-Holding Attributes Reference
 
-Tinderbox has 12 system attributes whose values are executable action code. These attributes hold Tinderbox expressions/actions that fire automatically in response to specific triggers.
+> Examples include the required `document` parameter. Replace `"MyDoc"` with your document name.
 
-All can be read and written via AppleScript using `evaluate` and `act on`.
+Tinderbox has 12 system attributes whose values are executable action code. These attributes hold Tinderbox action code that fire automatically in response to specific triggers.
+
+All can be read via the `evaluate` tool and written via the `set_value` tool or the `do` tool.
 
 ---
 
@@ -19,9 +21,9 @@ All can be read and written via AppleScript using `evaluate` and `act on`.
 | `$OnVisit` | Note visited/selected | The visited note | Possible |
 | `$DisplayExpression` | On render | Display result | Yes |
 | `$HoverExpression` | On hover | Hover text | No (needs UI hover) |
-| `$TableExpression` | On table render | Table cells | No (display only) |
-| `$AgentQuery` | Every agent cycle | Agent matches | Yes (tested in AppleScript suite) |
-| `$AgentAction` | Agent matches notes | Matched aliases | Yes (tested in AppleScript suite) |
+| `$TableExpression` | On map container render | Map container summary | No (display only) |
+| `$AgentQuery` | Every agent cycle | Agent matches | Yes |
+| `$AgentAction` | Agent matches notes | Matched aliases | Yes |
 
 ---
 
@@ -35,44 +37,36 @@ All can be read and written via AppleScript using `evaluate` and `act on`.
 
 **Use case**: Continuously computed values, auto-classification, dynamic formatting.
 
-**AppleScript Example**:
-```applescript
-tell application id "Cere"
-	tell front document
-		-- Set a rule that continuously sets Badge
-		act on noteRef with "$Rule='$Badge=\"ruled\"'"
+**MCP Example**:
+```
+// Set a rule that continuously sets Badge
+do(document: "MyDoc", action: "$Rule='$Badge=\"ruled\"'", note: "/path/to/note")
 
-		-- Read the rule
-		set theRule to evaluate noteRef with "$Rule"
+// Read the rule
+evaluate(document: "MyDoc", expression: "$Rule", note: "/path/to/note")
 
-		-- IMPORTANT: Always clear rules when done to prevent ongoing side effects
-		act on noteRef with "$Rule=\"\""
-	end tell
-end tell
+// IMPORTANT: Always clear rules when done to prevent ongoing side effects
+set_value(document: "MyDoc", notes: "/path/to/note", attribute: "Rule", value: "")
 ```
 
-> **Live-tested**: Setting `$Rule` via act on works. However, the rule cycle may not fire during the same AppleScript invocation. In testing, the rule did not fire within 6 seconds, suggesting rules may need the document to be in an active (foreground) state. Always clear rules after testing.
+> **Live-tested**: Setting `$Rule` via the `do` tool works. However, the rule cycle may not fire immediately. Always clear rules after testing.
 
-**$RuleDisabled** (Boolean): Controls whether `$Rule` fires. Set to `true` to prevent the rule from executing. Useful for one-shot rules that should only fire when manually enabled.
+`$RuleDisabled` (Boolean): Controls whether `$Rule` fires. Set to `true` to prevent the rule from executing. Useful for one-shot rules that should only fire when manually enabled.
 
 **Self-disabling rule pattern**: Set `$Rule="action($Text);"` and `$RuleDisabled=true`. The note's `$Text` contains the action code payload with `$RuleDisabled=true;` as its last line. To execute: set `$RuleDisabled=false` — the rule fires once, executes `$Text`, and the action code re-disables itself.
 
-```applescript
-tell application id "Cere"
-	tell front document
-		-- Set up a self-disabling rule
-		act on noteRef with "$Rule=\"action($Text);\""
-		act on noteRef with "$RuleDisabled=true"
+```
+// Set up a self-disabling rule
+do(document: "MyDoc", action: "$Rule=\"action($Text);\"", note: "/path/to/note")
+set_value(document: "MyDoc", notes: "/path/to/note", attribute: "RuleDisabled", value: "true")
 
-		-- The note's $Text should end with:
-		--   $RuleDisabled=true;
-		-- This makes the rule self-disabling after one execution.
+// The note's $Text should end with:
+//   $RuleDisabled=true;
+// This makes the rule self-disabling after one execution.
 
-		-- To trigger: enable the rule
-		act on noteRef with "$RuleDisabled=false"
-		-- Rule fires on next cycle, executes $Text, which re-disables itself
-	end tell
-end tell
+// To trigger: enable the rule
+set_value(document: "MyDoc", notes: "/path/to/note", attribute: "RuleDisabled", value: "false")
+// Rule fires on next cycle, executes $Text, which re-disables itself
 ```
 
 ### $Edict
@@ -83,17 +77,13 @@ end tell
 
 **Use case**: Low-priority maintenance tasks, periodic cleanup.
 
-**AppleScript Example**:
-```applescript
-tell application id "Cere"
-	tell front document
-		act on noteRef with "$Edict='$Badge=\"checked\"'"
-		act on noteRef with "$Edict=\"\""  -- clear when done
-	end tell
-end tell
+**MCP Example**:
+```
+do(document: "MyDoc", action: "$Edict='$Badge=\"checked\"'", note: "/path/to/note")
+set_value(document: "MyDoc", notes: "/path/to/note", attribute: "Edict", value: "")  # clear when done
 ```
 
-> Not practically testable via AppleScript due to long cycle times.
+> Not practically testable due to long cycle times.
 
 ### $OnAdd
 
@@ -103,27 +93,22 @@ end tell
 
 **Use case**: Auto-tagging new notes, setting prototypes on creation, inbox processing.
 
-**AppleScript Example**:
-```applescript
-tell application id "Cere"
-	tell front document
-		-- Set OnAdd on a container
-		act on containerRef with "$OnAdd='$Badge=\"star\"'"
+**MCP Example**:
+```
+// Set OnAdd on a container
+do(document: "MyDoc", action: "$OnAdd='$Badge=\"star\"'", note: "/path/to/note")
 
-		-- Create a child — should trigger OnAdd
-		act on containerRef with "create(\"NewChild\")"
+// Create a child — should trigger OnAdd
+create_note(document: "MyDoc", name: "NewChild", container: "/path/to/note")
 
-		-- Check the child's badge
-		set childRef to note "NewChild" of containerRef
-		set theBadge to evaluate childRef with "$Badge"
+// Check the child's badge
+evaluate(document: "MyDoc", expression: "$Badge", note: "/path/to/note/NewChild")
 
-		-- Clean up
-		act on containerRef with "$OnAdd=\"\""
-	end tell
-end tell
+// Clean up
+set_value(document: "MyDoc", notes: "/path/to/note", attribute: "OnAdd", value: "")
 ```
 
-> **Live-tested**: Setting `$OnAdd` via act on works. When creating a child via `create()` in the same AppleScript invocation, the OnAdd action may not fire immediately — it may require a Tinderbox UI cycle. The child is created successfully but the OnAdd side effect may be delayed.
+> **Live-tested**: Setting `$OnAdd` works. When creating a child via the `create_note` tool, the `$OnAdd` action may not fire immediately — it may require a Tinderbox UI cycle. The child is created successfully but the `$OnAdd` side effect may be delayed.
 
 ### $OnRemove
 
@@ -133,13 +118,9 @@ end tell
 
 **Use case**: Cleanup actions, logging departures.
 
-**AppleScript Example**:
-```applescript
-tell application id "Cere"
-	tell front document
-		act on containerRef with "$OnRemove='$Badge=\"removed\"'"
-	end tell
-end tell
+**MCP Example**:
+```
+do(document: "MyDoc", action: "$OnRemove='$Badge=\"removed\"'", note: "/path/to/note")
 ```
 
 ### $OnJoin
@@ -150,7 +131,7 @@ end tell
 
 **Use case**: Auto-configure composite members.
 
-> Not testable via AppleScript — composite operations require UI interaction.
+> Not testable via MCP tools — composite operations require UI interaction.
 
 ### $OnPaste
 
@@ -160,17 +141,13 @@ end tell
 
 **Use case**: Self-installing notes — copy a note into a new document and have it automatically set up prototypes, templates, containers, etc. Replaces the `$Rule` + `$RuleDisabled` pattern for installers.
 
-**AppleScript Example**:
-```applescript
-tell application id "Cere"
-	tell front document
-		-- Set up an installer that runs when the note is pasted into a new document
-		act on noteRef with "$OnPaste=\"action($Text);\""
-		-- The note's $Text contains the full installer action code.
-		-- When copied and pasted into another document, $OnPaste fires
-		-- and executes the installer automatically.
-	end tell
-end tell
+**MCP Example**:
+```
+// Set up an installer that runs when the note is pasted into a new document
+do(document: "MyDoc", action: "$OnPaste=\"action($Text);\"", note: "/path/to/note")
+// The note's $Text contains the full installer action code.
+// When copied and pasted into another document, $OnPaste fires
+// and executes the installer automatically.
 ```
 
 **Workflow**:
@@ -179,7 +156,7 @@ end tell
 3. Copy the note, paste into target document
 4. `$OnPaste` fires automatically — no manual steps needed
 
-> **Added in v10.1.2**. Not testable via AppleScript (requires UI paste operation).
+> **Added in v10.1.2**. Not testable via MCP tools (requires UI paste operation).
 
 ### $OnVisit
 
@@ -189,15 +166,9 @@ end tell
 
 **Use case**: Track visit counts, update timestamps, trigger on-access actions.
 
-**AppleScript Example**:
-```applescript
-tell application id "Cere"
-	tell front document
-		act on noteRef with "$OnVisit='$Badge=\"visited\"'"
-		-- Setting selected note might trigger OnVisit
-		set selected note to noteRef
-	end tell
-end tell
+**MCP Example**:
+```
+do(document: "MyDoc", action: "$OnVisit='$Badge=\"visited\"'", note: "/path/to/note")
 ```
 
 ### $DisplayExpression
@@ -208,24 +179,20 @@ end tell
 
 **Use case**: Dynamic titles showing status, counts, or computed values.
 
-**AppleScript Example**:
-```applescript
-tell application id "Cere"
-	tell front document
-		-- Set display expression — shows name wrapped in brackets
-		act on noteRef with "$DisplayExpression=\"[\"+$Name+\"]\""
+**MCP Example**:
+```
+// Set display expression — shows name wrapped in brackets
+do(document: "MyDoc", action: "$DisplayExpression=\"[\"+$Name+\"]\"", note: "/path/to/note")
 
-		-- Read the computed display name
-		set displayName to evaluate noteRef with "$DisplayName"
-		-- Returns "[NoteName]"
+// Read the computed display name
+evaluate(document: "MyDoc", expression: "$DisplayName", note: "/path/to/note")
+// Returns "[NoteName]"
 
-		-- Read the expression itself
-		set expr to evaluate noteRef with "$DisplayExpression"
+// Read the expression itself
+evaluate(document: "MyDoc", expression: "$DisplayExpression", note: "/path/to/note")
 
-		-- Clear
-		act on noteRef with "$DisplayExpression=\"\""
-	end tell
-end tell
+// Clear
+set_value(document: "MyDoc", notes: "/path/to/note", attribute: "DisplayExpression", value: "")
 ```
 
 > **Live-tested**: Setting `$DisplayExpression` and reading `$DisplayName` works correctly. `$DisplayName` returns the computed result of the expression. When `$DisplayExpression` is empty, `$DisplayName` returns `$Name`.
@@ -238,16 +205,12 @@ end tell
 
 **Use case**: Show tooltips with additional info.
 
-**AppleScript Example**:
-```applescript
-tell application id "Cere"
-	tell front document
-		act on noteRef with "$HoverExpression=\"Tags: \"+$Tags"
-	end tell
-end tell
+**MCP Example**:
+```
+do(document: "MyDoc", action: "$HoverExpression=\"Tags: \"+$Tags", note: "/path/to/note")
 ```
 
-> Not testable via AppleScript — requires mouse hover UI interaction.
+> Not testable via MCP tools — requires mouse hover UI interaction.
 
 ### $TableExpression
 
@@ -257,7 +220,7 @@ end tell
 
 **Use case**: Custom column content.
 
-> Display-only — not meaningfully testable via AppleScript.
+> Display-only — not meaningfully testable via MCP tools.
 
 ### $AgentQuery
 
@@ -267,18 +230,10 @@ end tell
 
 **Use case**: Dynamic note collection based on criteria.
 
-**AppleScript Example**:
-```applescript
-tell application id "Cere"
-	tell front document
-		act on agentRef with "$AgentQuery='$Prototype==\"Task\" & $Checked==false'"
-		refresh agentRef  -- force immediate evaluation
-		set results to notes of agentRef  -- alias children
-	end tell
-end tell
+**MCP Example**:
 ```
-
-> **Already tested** in AppleScript test suite.
+do(document: "MyDoc", action: "$AgentQuery='$Prototype==\"Task\" & $Checked==false'", note: "/path/to/note")
+```
 
 ### $AgentAction
 
@@ -288,43 +243,36 @@ end tell
 
 **Use case**: Auto-color, auto-tag, or modify matched notes.
 
-**AppleScript Example**:
-```applescript
-tell application id "Cere"
-	tell front document
-		act on agentRef with "$AgentAction='$Color=\"blue\"'"
-	end tell
-end tell
+**MCP Example**:
 ```
-
-> **Already tested** conceptually in AppleScript test suite.
+do(document: "MyDoc", action: "$AgentAction='$Color=\"blue\"'", note: "/path/to/note")
+```
 
 ---
 
 ## Attribute Type
 
-All 12 attributes have attribute type `"action"` — their values are Tinderbox action code strings, not plain text. When read via `evaluate`, the raw action code string is returned.
+All 12 attributes have attribute type `"action"` — their values are Tinderbox action code strings, not plain text. When read via the `evaluate` tool, the raw action code string is returned.
 
 ---
 
-## Setting Action Code via AppleScript
+## Setting Action Code via MCP Tools
 
 Action-holding attributes require careful quoting because the action code itself contains quotes. Tinderbox does not support quote escaping — a `"` always terminates the string. When the action value contains nested quotes, use Tinderbox single-quoted strings (where `"` is literal inside single quotes):
 
-```applescript
-tell application id "Cere"
-	tell front document
-		-- Nested quotes — use Tinderbox single-quoted strings for the inner value
-		act on noteRef with "$Rule='$Badge=\"flag\"'"
+```
+// Nested quotes — use Tinderbox single-quoted strings for the inner value
+do(document: "MyDoc", action: "$Rule='$Badge=\"flag\"'", note: "/path/to/note")
 
-		-- Multiple actions in one attribute
-		act on noteRef with "$OnAdd='$Badge=\"star\";$Color=\"green\"'"
+// Multiple actions in one attribute
+do(document: "MyDoc", action: "$OnAdd='$Badge=\"star\";$Color=\"green\"'", note: "/path/to/note")
 
-		-- Reading back — returns the raw action code
-		set theRule to evaluate noteRef with "$Rule"
-		-- theRule = "$Badge=\"flag\""
-	end tell
-end tell
+// Reading back — returns the raw action code
+evaluate(document: "MyDoc", expression: "$Rule", note: "/path/to/note")
+// returns: $Badge="flag"
+
+// Alternatively, use set_value for simple values
+set_value(document: "MyDoc", notes: "/path/to/note", attribute: "Rule", value: "$Badge=\"flag\"")
 ```
 
 ---
@@ -333,14 +281,10 @@ end tell
 
 Always clear action attributes when done testing to prevent ongoing side effects:
 
-```applescript
-tell application id "Cere"
-	tell front document
-		act on noteRef with "$Rule=\"\""
-		act on noteRef with "$OnAdd=\"\""
-		act on noteRef with "$DisplayExpression=\"\""
-	end tell
-end tell
+```
+set_value(document: "MyDoc", notes: "/path/to/note", attribute: "Rule", value: "")
+set_value(document: "MyDoc", notes: "/path/to/note", attribute: "OnAdd", value: "")
+set_value(document: "MyDoc", notes: "/path/to/note", attribute: "DisplayExpression", value: "")
 ```
 
 ---
@@ -348,6 +292,4 @@ end tell
 ## Cross-References
 
 - **[Action Functions](action-functions.md)** — All functions usable inside action code
-- **[AppleScript API Reference](applescript-api.md)** — AppleScript bridge: evaluate, act on
 - **[Expressions & Actions](expressions.md)** — Quick-reference expression syntax
-- **[Test Script](../scripts/test-action-code.sh)** — Tests 14-16 cover action-holding attributes

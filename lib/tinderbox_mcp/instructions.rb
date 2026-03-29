@@ -19,14 +19,14 @@ Tinderbox attributes are accessed with the `$` prefix. Key built-in attributes:
 **Agent-specific**: $AgentQuery, $AgentAction, $AgentPriority, $CleanupAction
 **Action-holding**: $Rule, $Edict, $OnAdd, $OnRemove, $OnVisit, $DisplayExpression, $HoverExpression
 
-User-created attributes start with a capital letter: `$MyCustomAttr`. Create with `createAttribute("AttrName","type")` where type is: string, number, boolean, date, color, list, set, dictionary, interval.
+User-created attributes start with a capital letter: `$MyCustomAttr`. Create with `createAttribute("AttrName","type")` where type is: string, number, boolean, date, color, list, set, dictionary, interval, email, file, url.
 
 ## Expression Syntax
 
 Expressions are read-only and return values. Use with the `evaluate` tool.
 
 ### Operators
-- **Arithmetic**: `+`, `-`, `*`, `/`, `%`
+- **Arithmetic**: `+`, `-`, `*`, `/` (note: `%` is NOT modulo — use `mod(a,b)` instead)
 - **Comparison**: `==`, `!=`, `>`, `<`, `>=`, `<=`
 - **Logical**: `&` (AND), `|` (OR), `!` (NOT). Use parentheses for grouping: `(A | B) & C`
 - **String concatenation**: `+`
@@ -42,7 +42,7 @@ Expressions are read-only and return values. Use with the `evaluate` tool.
 
 ### Key Functions
 - **Collections**: `collect(scope, $Attr)`, `collect_if(scope, condition, $Attr)`, `count(scope)`, `sum(scope, $Attr)`, `min(scope, $Attr)`, `max(scope, $Attr)`, `avg(scope, $Attr)`
-- **String**: `.contains(pattern)` (supports regex), `.icontains(pattern)`, `.beginsWith(str)`, `.endsWith(str)`, `.replace(pattern, replacement)`, `.lowercase`, `.uppercase`, `.trim`, `.substr(start, len)`, `.split(delim)`. Strings can also be compared with `==`, `!=`, `>`, `<`, etc.
+- **String**: `.contains(pattern)` (supports regex), `.icontains(pattern)`, `.beginsWith(str)`, `.endsWith(str)`, `.replace(pattern, replacement)`, `.lowercase()`, `.uppercase()`, `.trim()`, `.substr(start, len)`, `.split(delim)`. Strings can also be compared with `==`, `!=`, `>`, `<`, etc.
 - **Date**: `date("today")`, `date("now")`, `date("yesterday")`, `date("today+7")`, `date("today-1 week")`, `minutes`, `hours`, `days`, `weeks`, `months`, `years` (intervals)
 - **Formatting**: `format(value, pattern)` — e.g., `format($WordCount, "0")` for integer
 - **Math**: `sqrt(x)`, `abs(x)`, `floor(x)`, `ceil(x)`, `round(x)`, `sin(x)`, `cos(x)`
@@ -93,7 +93,7 @@ Tinderbox has NO `else if` or `elseif`. Only `if` and `if/else`:
 - `createAttribute("AttrName","type")` — create user attribute
 - `createAgent(path)` — create an agent
 - `create(name)` — create child note
-- `linkFromOriginal()` — link alias to original
+- `linkFromOriginal()` — create link from an alias's original note
 
 ## Map Adornments
 
@@ -157,7 +157,7 @@ Notes can have a Prototype note (set via `$Prototype`). A note inherits attribut
 For detailed reference, these resources are available on-demand:
 - `tinderbox://ref/adornments` — Map adornments: smart adornments, sticky/lock, grids, dividers
 - `tinderbox://ref/expressions` — Full expression & action language syntax with examples
-- `tinderbox://ref/action-functions` — Catalog of 600+ action functions by category
+- `tinderbox://ref/action-functions` — Catalog of 300+ action functions by category
 - `tinderbox://ref/action-attributes` — 12 action-holding attributes ($Rule, $AgentQuery, etc.)
 - `tinderbox://ref/system-containers` — Prototypes, Templates, Hints, and Composites
 - `tinderbox://ref/export-codes` — 46 ^caret^ export template codes

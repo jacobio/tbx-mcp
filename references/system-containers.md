@@ -1,12 +1,14 @@
 # System Containers & Built-In Features
 
-Tinderbox recognizes four special root-level containers created via the **File** menu, plus action code functions (`require()`, `update()`) for programmatic access. This reference covers all system containers, their internal structure, and how to work with them via AppleScript.
+> Examples include the required `document` parameter. Replace `"MyDoc"` with your document name.
+
+Tinderbox recognizes four special root-level containers created via the **File** menu, plus action code functions (`require()`, `update()`) for programmatic access. This reference covers all system containers, their internal structure, and how to work with them via MCP tools.
 
 ---
 
 ## The `require()` Function
 
-The `require()` function programmatically adds built-in containers and toggles UI features. It is the preferred way to ensure system containers exist before scripting against them.
+The `require()` function programmatically adds built-in containers and toggles UI features. It is the preferred way to ensure system containers exist before working with them.
 
 | Call | Effect |
 |------|--------|
@@ -16,32 +18,27 @@ The `require()` function programmatically adds built-in containers and toggles U
 | `require("Preview")` | Shows the text pane selector above the text pane |
 | `require("NoPreview")` | Hides the text pane selector above the text pane |
 
-### AppleScript Usage
+**MCP Example**:
+```
+// Ensure Prototypes container exists
+do(document: "MyDoc", action: "require(\"Prototypes\")", note: "/")
 
-```applescript
-tell application id "Cere"
-	tell front document
-		-- Ensure Prototypes container exists
-		act on note 1 with "require(\"Prototypes\")"
+// Ensure Templates container exists
+do(document: "MyDoc", action: "require(\"Templates\")", note: "/")
 
-		-- Ensure Templates container exists
-		act on note 1 with "require(\"Templates\")"
+// Ensure Hints container exists (with full sub-structure)
+do(document: "MyDoc", action: "require(\"Hints\")", note: "/")
 
-		-- Ensure Hints container exists (with full sub-structure)
-		act on note 1 with "require(\"Hints\")"
+// Show the text pane selector
+do(document: "MyDoc", action: "require(\"Preview\")", note: "/")
 
-		-- Show the text pane selector
-		act on note 1 with "require(\"Preview\")"
-
-		-- Hide the text pane selector
-		act on note 1 with "require(\"NoPreview\")"
-	end tell
-end tell
+// Hide the text pane selector
+do(document: "MyDoc", action: "require(\"NoPreview\")", note: "/")
 ```
 
-> **Note**: `require()` is idempotent -- calling it when the container already exists has no effect.
+> **Note**: `require()` is idempotent — calling it when the container already exists has no effect.
 
-> **Note**: There is no `require("Composites")` documented. That container must be created via the File menu or manually via AppleScript (see section below).
+> **Note**: There is no `require("Composites")` documented. That container must be created via the File menu or manually (see section below).
 
 ---
 
@@ -58,16 +55,12 @@ The `update()` function recompiles user-defined functions stored in `/Hints/Libr
 
 ### Usage
 
-```applescript
-tell application id "Cere"
-	tell front document
-		-- After modifying an EXISTING Library function note's text
-		act on libRef with "update()"
+```
+// After modifying an EXISTING Library function note's text
+do(document: "MyDoc", action: "update()", note: "/")
 
-		-- After CREATING a new Library function note, compile it by path
-		act on note 1 with "update(\"/Hints/Library/MyFunction\")"
-	end tell
-end tell
+// After CREATING a new Library function note, compile it by path
+do(document: "MyDoc", action: "update(\"/Hints/Library/MyFunction\")", note: "/")
 ```
 
 > **Important**: Library notes are compiled at document open. The no-argument `update()` only recompiles notes that were previously compiled. When creating new Library notes programmatically (e.g., in an installer), you **must** use `update("/Hints/Library/NoteName")` with the explicit path to compile each new note. The no-argument form will not pick them up.
@@ -103,27 +96,22 @@ Tinderbox's note-name parser recognizes `#PrototypeName` at the end of a new not
 - If `/Prototypes` doesn't exist, it's auto-created at root level
 - `#` followed by a digit (e.g., "Activity #3") is NOT treated as prototype syntax
 
-### AppleScript: Create Programmatically
+**MCP Example**:
+```
+// Using require() — preferred
+do(document: "MyDoc", action: "require(\"Prototypes\")", note: "/")
 
-```applescript
-tell application id "Cere"
-	tell front document
-		-- Using require() -- preferred
-		act on note 1 with "require(\"Prototypes\")"
+// Or create manually with the correct attributes
+create_note(document: "MyDoc", name: "Prototypes", container: "/")
+set_value(document: "MyDoc", notes: "/Prototypes", attribute: "OnAdd", value: "$IsPrototype=true")
+set_value(document: "MyDoc", notes: "/Prototypes", attribute: "HTMLDontExport", value: "true")
+set_value(document: "MyDoc", notes: "/Prototypes", attribute: "HTMLExportChildren", value: "false")
 
-		-- Or create manually with the correct attributes
-		set protosRef to make new note with properties {name:"Prototypes"}
-		act on protosRef with "$OnAdd=\"$IsPrototype=true\""
-		act on protosRef with "$HTMLDontExport=true"
-		act on protosRef with "$HTMLExportChildren=false"
-
-		-- Add a custom prototype
-		set taskProto to make new note at protosRef with properties {name:"Task"}
-		-- $IsPrototype is set automatically by $OnAdd
-		act on taskProto with "$Badge=\"star\""
-		act on taskProto with "$Color=\"blue\""
-	end tell
-end tell
+// Add a custom prototype
+create_note(document: "MyDoc", name: "Task", container: "/Prototypes")
+// $IsPrototype is set automatically by $OnAdd
+set_value(document: "MyDoc", notes: "/Prototypes/Task", attribute: "Badge", value: "star")
+set_value(document: "MyDoc", notes: "/Prototypes/Task", attribute: "Color", value: "blue")
 ```
 
 ---
@@ -149,23 +137,17 @@ HTML, HTML Single note, OPML, Scrivener, Preview
 - Agents cannot function as templates, even with `$IsTemplate=true`
 - Creating templates also adds the "HTML" prototype to `/Prototypes` if needed
 
-### AppleScript: Create Programmatically
+**MCP Example**:
+```
+// Using require() — preferred
+do(document: "MyDoc", action: "require(\"Templates\")", note: "/")
 
-```applescript
-tell application id "Cere"
-	tell front document
-		-- Using require() -- preferred
-		act on note 1 with "require(\"Templates\")"
+// Or create manually
+create_note(document: "MyDoc", name: "Templates", container: "/")
+set_value(document: "MyDoc", notes: "/Templates", attribute: "OnAdd", value: "$IsTemplate=true")
 
-		-- Or create manually
-		set templatesRef to make new note with properties {name:"Templates"}
-		act on templatesRef with "$OnAdd=\"$IsTemplate=true\""
-
-		-- Add a custom template
-		set myTemplate to make new note at templatesRef with properties {name:"My Export"}
-		set text of myTemplate to "<html><head><title>^value($Name)^</title></head><body>^text^</body></html>"
-	end tell
-end tell
+// Add a custom template
+create_note(document: "MyDoc", name: "My Export", container: "/Templates", text: "<html><head><title>^value($Name)^</title></head><body>^text^</body></html>")
 ```
 
 ---
@@ -180,13 +162,13 @@ The Hints container has the most complex internal structure of the four system c
 
 ```
 /Hints
-  /Taggers         -- AI-assisted automatic tagging
-  /Highlighters    -- Syntax highlighting definitions
-  /Stamps          -- Reusable action code stamps
-  /Library         -- User-defined functions (loaded at startup)
-  /Stoplist        -- Words to exclude from word clouds
-  /Preview         -- Preview template configuration
-  /AI              -- AI integration settings
+  /Taggers         # AI-assisted automatic tagging
+  /Highlighters    # Syntax highlighting definitions
+  /Stamps          # Reusable action code stamps
+  /Library         # User-defined functions (loaded at startup)
+  /Stoplist        # Words to exclude from word clouds
+  /Preview         # Preview template configuration
+  /AI              # AI integration settings
 ```
 
 ### Taggers (`/Hints/Taggers`)
@@ -220,19 +202,15 @@ tag: term1; term2; term3;
 
 Notes in the Library container define user functions that are compiled at document open. These functions are then available in any action code throughout the document.
 
-```applescript
-tell application id "Cere"
-	tell front document
-		-- Library note text defines a function:
-		-- function myHelper(x) { return x * 2; }
+```
+// Library note text defines a function:
+// function myHelper(x) { return x * 2; }
 
-		-- After modifying an existing Library note via AppleScript, recompile all:
-		act on libRef with "update()"
+// After modifying an existing Library note, recompile all:
+do(document: "MyDoc", action: "update()", note: "/")
 
-		-- After creating a NEW Library note, compile it by path:
-		act on note 1 with "update(\"/Hints/Library/MyHelper\")"
-	end tell
-end tell
+// After creating a NEW Library note, compile it by path:
+do(document: "MyDoc", action: "update(\"/Hints/Library/MyHelper\")", note: "/")
 ```
 
 - Library notes must have `$IsAction = true` to be compiled as action code
@@ -249,12 +227,8 @@ Define syntax highlighting rules using regex patterns paired with formatting.
 
 Set `$SyntaxHighlighting` on a note to the highlighter name to activate it:
 
-```applescript
-tell application id "Cere"
-	tell front document
-		act on noteRef with "$SyntaxHighlighting=\"Markdown\""
-	end tell
-end tell
+```
+set_value(document: "MyDoc", notes: "/path/to/note", attribute: "SyntaxHighlighting", value: "Markdown")
 ```
 
 ### Stamps (`/Hints/Stamps`)
@@ -266,21 +240,11 @@ When the Hints container is present, stamps from the Stamps Inspector are replic
 - Notes with parenthesized names are treated as commentary
 - Stamp names containing exactly one colon create submenus in the Stamps menu
 
-### AppleScript: Create Taggers Programmatically
-
-```applescript
-tell application id "Cere"
-	tell front document
-		-- Assuming /Hints/Taggers already exists
-		set taggersRef to find note in it with path "/Hints/Taggers"
-
-		-- Create a custom tagger (requires a Set-type user attribute named "Topics")
-		set topicTagger to make new note at taggersRef with properties {name:"Topics"}
-		set text of topicTagger to "AI: artificial intelligence; machine learning; neural network;
-Data: database; SQL; data warehouse;
-"
-	end tell
-end tell
+**MCP Example**:
+```
+// Assuming /Hints/Taggers already exists
+// Create a custom tagger (requires a Set-type user attribute named "Topics")
+create_note(document: "MyDoc", name: "Topics", container: "/Hints/Taggers", text: "AI: artificial intelligence; machine learning; neural network;\nData: database; SQL; data warehouse;\n")
 ```
 
 ---
@@ -303,16 +267,11 @@ end tell
 - Composites must have a composite name to appear in selection lists
 - In Map view, touching note icons automatically form composites
 
-### AppleScript: Create Programmatically
-
-```applescript
-tell application id "Cere"
-	tell front document
-		set compositesRef to make new note with properties {name:"Composites"}
-		act on compositesRef with "$HTMLDontExport=true"
-		act on compositesRef with "$HTMLExportChildren=false"
-	end tell
-end tell
+**MCP Example**:
+```
+create_note(document: "MyDoc", name: "Composites", container: "/")
+set_value(document: "MyDoc", notes: "/Composites", attribute: "HTMLDontExport", value: "true")
+set_value(document: "MyDoc", notes: "/Composites", attribute: "HTMLExportChildren", value: "false")
 ```
 
 ---
@@ -323,39 +282,21 @@ The text pane selector displays tabs above the text pane for switching between T
 
 ### Programmatic Control
 
-```applescript
-tell application id "Cere"
-	tell front document
-		-- Show the text pane selector
-		act on note 1 with "require(\"Preview\")"
+```
+// Show the text pane selector
+do(document: "MyDoc", action: "require(\"Preview\")", note: "/")
 
-		-- Hide the text pane selector
-		act on note 1 with "require(\"NoPreview\")"
-	end tell
-end tell
+// Hide the text pane selector
+do(document: "MyDoc", action: "require(\"NoPreview\")", note: "/")
 ```
 
 ### Keyboard Shortcut
 
-**Option-Command-E** (`-Command-E`) cycles through the text pane modes: Text, Preview, Export.
+**Option-Command-E** cycles through the text pane modes: Text, Preview, Export.
 
 ### Menu Access
 
 Window > Show/Hide Text Pane Selector
-
-### Via System Events (AppleScript)
-
-For cases where action code isn't available, you can trigger menu items via macOS System Events:
-
-```applescript
-tell application "System Events"
-	tell process "Tinderbox 11"
-		click menu item "Show Text Pane Selector" of menu "Window" of menu bar 1
-	end tell
-end tell
-```
-
-> **Note**: The System Events approach requires accessibility permissions and the exact menu item name (which toggles between "Show" and "Hide").
 
 ---
 
@@ -366,7 +307,7 @@ end tell
 | `/Prototypes` | `require("Prototypes")` | File > Built-In Prototypes | `$IsPrototype=true` |
 | `/Templates` | `require("Templates")` | File > Built-In Templates | `$IsTemplate=true` |
 | `/Hints` | `require("Hints")` | File > Built-In Hints | (complex sub-structure) |
-| `/Composites` | -- | File > Built-In Composites | (none) |
+| `/Composites` | — | File > Built-In Composites | (none) |
 
 | Feature | `require()` Call |
 |---------|-----------------|
@@ -377,7 +318,6 @@ end tell
 
 ## Cross-References
 
-- **[Action Functions](action-functions.md)** -- `require()` and `update()` in System/Misc section
-- **[Action-Holding Attributes](action-attributes.md)** -- `$OnAdd` behavior for Prototypes/Templates containers
-- **[SKILL.md](../SKILL.md)** -- Prototype inheritance patterns
-- **[Patterns](patterns.md)** -- Runnable recipes including prototype workflows
+- **[Action Functions](action-functions.md)** — `require()` and `update()` in System/Misc section
+- **[Action-Holding Attributes](action-attributes.md)** — `$OnAdd` behavior for `/Prototypes` and `/Templates` containers
+- **[Expressions & Actions](expressions.md)** — Expression and action code syntax reference

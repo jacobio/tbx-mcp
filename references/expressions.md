@@ -1,36 +1,36 @@
 # Tinderbox Expression & Action Language Reference
 
-Tinderbox has its own expression language used in `evaluate` and action language used in `act on`. This reference covers the syntax needed to construct these strings from AppleScript.
+> Examples include the required `document` parameter. Replace `"MyDoc"` with your document name.
 
-**IMPORTANT**: In AppleScript, both `evaluate` and `act on` must be called **in the context of a note within a tell block**: `evaluate noteRef with "..."` and `act on noteRef with "..."`.
+Tinderbox has its own expression language (used with the `evaluate` tool) and action code language (used with the `do` tool). This reference covers the syntax for constructing these strings.
 
 ## Attribute References
 
 Attributes are referenced with `$` prefix:
 
 ```
-$Name              — note name
-$Text              — note text
-$Color             — note color
-$Created           — creation date
-$Modified          — last modified date
-$WordCount         — word count of $Text
-$ChildCount        — number of children
-$SiblingOrder      — position among siblings (1-based, writable — set to reorder outline)
-$Prototype         — prototype name
-$Tags              — set of tags (semicolon-separated)
-$Path              — full path from root
-$Width             — map width
-$Height            — map height
-$Xpos              — map X position
-$Ypos              — map Y position
-$Badge             — badge name
-$Checked           — checkbox state (boolean)
-$URL               — associated URL
-$ReferenceURL      — reference URL
-$ReadOnly          — is read-only
-$HTMLExportPath    — export path
-$Separator         — is a separator
+$Name              # note name
+$Text              # note text
+$Color             # note color
+$Created           # creation date
+$Modified          # last modified date
+$WordCount         # word count of $Text
+$ChildCount        # number of children
+$SiblingOrder      # position among siblings (1-based, writable -- set to reorder outline)
+$Prototype         # prototype name
+$Tags              # set of tags (semicolon-separated)
+$Path              # full path from root
+$Width             # map width
+$Height            # map height
+$Xpos              # map X position
+$Ypos              # map Y position
+$Badge             # badge name
+$Checked           # checkbox state (boolean)
+$URL               # associated URL
+$ReferenceURL      # reference URL
+$ReadOnly          # is read-only
+$HTMLExportPath    # export path
+$Separator         # is a separator
 ```
 
 ### User Attribute References
@@ -40,317 +40,285 @@ User attributes use the same `$` syntax:
 ```
 $MyCustomField
 $ProjectStatus
-$Priority
 ```
 
-## Reading Attributes (via evaluate)
+## Reading Attributes
 
-```applescript
-tell application id "Cere"
-    tell front document
-        -- Simple attribute read — called ON THE NOTE
-        evaluate noteRef with "$Name"
-        evaluate noteRef with "$Created"
-        evaluate noteRef with "$Tags"
+Use the `evaluate` tool to read attribute values. All results are returned as strings.
 
-        -- With formatting (Tinderbox format codes, NOT ICU)
-        evaluate noteRef with "$Created.format(\"y-M0-D\")"
-        evaluate noteRef with "$Modified.format(\"h:mm p\")"
-    end tell
-end tell
+```
+// Simple attribute reads
+evaluate(document: "MyDoc", expression: "$Name", note: "/path/to/note")
+evaluate(document: "MyDoc", expression: "$Created", note: "/path/to/note")
+evaluate(document: "MyDoc", expression: "$Tags", note: "/path/to/note")
+
+// With formatting (Tinderbox format codes, NOT ICU)
+evaluate(document: "MyDoc", expression: "$Created.format(\"y-M0-D0\")", note: "/path/to/note")
+evaluate(document: "MyDoc", expression: "$Modified.format(\"h:mm p\")", note: "/path/to/note")
 ```
 
-## Writing Attributes (via act on)
+## Writing Attributes
 
-```applescript
-tell application id "Cere"
-    tell front document
-        -- Simple assignment — called ON THE NOTE
-        act on noteRef with "$Name=\"New Name\""
-        act on noteRef with "$Color=\"red\""
-        act on noteRef with "$Width=4"
-        act on noteRef with "$Checked=true"
+Use the `set_value` tool for simple attribute changes, or the `do` tool for action code:
 
-        -- Set/list append
-        act on noteRef with "$Tags+=\"newtag\""
+```
+// Via set_value (preferred for simple assignments -- handles quoting safely)
+set_value(document: "MyDoc", notes: "/path/to/note", attribute: "Name", value: "New Name")
+set_value(document: "MyDoc", notes: "/path/to/note", attribute: "Color", value: "red")
 
-        -- Set/list remove
-        act on noteRef with "$Tags-=\"oldtag\""
+// Via do tool (for expressions, arithmetic, set operations)
+do(document: "MyDoc", action: "$Width=4", note: "/path/to/note")
+do(document: "MyDoc", action: "$Checked=true", note: "/path/to/note")
 
-        -- Numeric increment
-        act on noteRef with "$Priority=$Priority+1"
-    end tell
-end tell
+// Set/list append
+do(document: "MyDoc", action: "$Tags+=\"newtag\"", note: "/path/to/note")
+
+// Set/list remove
+do(document: "MyDoc", action: "$Tags-=\"oldtag\"", note: "/path/to/note")
+
+// Numeric increment
+do(document: "MyDoc", action: "$MyCount=$MyCount+1", note: "/path/to/note")
 ```
 
 ## Operators
 
-### Arithmetic
-```
-+    addition
--    subtraction
-*    multiplication
-/    division
-```
+Operators are summarized in the quick reference. Below are additional notes and edge-case behaviors.
 
-> **Note**: `%` is NOT modulo in Tinderbox — it returns a literal string. Use `mod(a,b)` instead.
+### Arithmetic
+
+`+`, `-`, `*`, `/` work on numeric values. `+` also concatenates strings.
+
+> **Note**: `%` is NOT modulo in Tinderbox -- it returns a literal string. Use `mod(a,b)` instead.
 
 ### Comparison
-```
-==   equals
-!=   not equals
->    greater than
-<    less than
->=   greater than or equal
-<=   less than or equal
-```
+
+`==`, `!=`, `>`, `<`, `>=`, `<=` compare values and return `"true"` or `""` (empty string).
+
+String comparisons are case-sensitive by default. For case-insensitive matching, use `.icontains()` or `.lowercase()` before comparing.
 
 ### Logical
-```
-&    AND
-|    OR
-!    NOT
-```
 
-### String
-```
-+           concatenation
-.contains() contains substring
-.beginsWith() starts with
-.endsWith()  ends with
-.lowercase() lowercase
-.uppercase() uppercase
-.trim()     trim whitespace
-.wordCount  word count
-.paragraphCount paragraph count
-.size       character count
-```
+`&` (AND), `|` (OR), `!` (NOT). Use parentheses for grouping: `(A | B) & C`.
+
+Both `""` (empty string) and `0` are falsy. Everything else is truthy.
 
 ## String Operations
 
-```applescript
-tell application id "Cere"
-    tell front document
-        -- Contains
-        evaluate noteRef with "$Name.contains(\"test\")"
-        -- Returns "true" or "false" as string
+```
+// .contains() returns 1-based character position of match, or 0 if not found
+// Supports regex patterns as argument
+evaluate(document: "MyDoc", expression: "$Name.contains(\"test\")", note: "/path/to/note")
 
-        -- Begins with
-        evaluate noteRef with "$Name.beginsWith(\"Project\")"
+// Begins with / ends with -- return "true" or ""
+evaluate(document: "MyDoc", expression: "$Name.beginsWith(\"Project\")", note: "/path/to/note")
+evaluate(document: "MyDoc", expression: "$Name.endsWith(\".md\")", note: "/path/to/note")
 
-        -- Word count
-        evaluate noteRef with "$Text.wordCount"
+// Word count / paragraph count / character count
+evaluate(document: "MyDoc", expression: "$Text.wordCount", note: "/path/to/note")
+evaluate(document: "MyDoc", expression: "$Text.paragraphCount", note: "/path/to/note")
+evaluate(document: "MyDoc", expression: "$Text.size", note: "/path/to/note")
 
-        -- Substring
-        evaluate noteRef with "$Name.substr(0,5)"
-    end tell
-end tell
+// Substring
+evaluate(document: "MyDoc", expression: "$Name.substr(0,5)", note: "/path/to/note")
+
+// Case conversion
+evaluate(document: "MyDoc", expression: "$Name.lowercase()", note: "/path/to/note")
+evaluate(document: "MyDoc", expression: "$Name.uppercase()", note: "/path/to/note")
+
+// Trim whitespace
+evaluate(document: "MyDoc", expression: "$Name.trim()", note: "/path/to/note")
 ```
 
 ## Collection Operations
 
 Operate on children, descendants, siblings, or linked notes:
 
-```applescript
-tell application id "Cere"
-    tell front document
-        -- Count with condition
-        evaluate noteRef with "count(children, $Checked==true)"
+```
+// Count with condition (use count_if, not count)
+evaluate(document: "MyDoc", expression: "count_if(children, $Checked==true)", note: "/path/to/note")
 
-        -- Collect values
-        evaluate noteRef with "collect(children, $Name)"
-        -- Returns semicolon-separated list
+// Collect values -- returns semicolon-separated list
+evaluate(document: "MyDoc", expression: "collect(children, $Name)", note: "/path/to/note")
 
-        -- Sum numeric values
-        evaluate noteRef with "sum(children, $Price)"
+// Sum numeric values
+evaluate(document: "MyDoc", expression: "sum(children, $Price)", note: "/path/to/note")
 
-        -- Average
-        evaluate noteRef with "avg(children, $Priority)"
+// Average
+evaluate(document: "MyDoc", expression: "avg(children, $Score)", note: "/path/to/note")
 
-        -- Min / Max
-        evaluate noteRef with "min(children, $Price)"
-        evaluate noteRef with "max(children, $Priority)"
+// Min / Max
+evaluate(document: "MyDoc", expression: "min(children, $Price)", note: "/path/to/note")
+evaluate(document: "MyDoc", expression: "max(children, $Score)", note: "/path/to/note")
 
-        -- Collect from descendants (recursive)
-        evaluate noteRef with "collect(descendants, $Name)"
+// Collect from descendants (recursive)
+evaluate(document: "MyDoc", expression: "collect(descendants, $Name)", note: "/path/to/note")
 
-        -- Collect from linked notes
-        evaluate noteRef with "collect(links, $Name)"
+// Collect from linked notes
+evaluate(document: "MyDoc", expression: "collect(links, $Name)", note: "/path/to/note")
 
-        -- Collect with condition
-        evaluate noteRef with "collect_if(children, $Checked==true, $Name)"
-    end tell
-end tell
+// Collect with condition
+evaluate(document: "MyDoc", expression: "collect_if(children, $Checked==true, $Name)", note: "/path/to/note")
 ```
 
 ## Conditional Expressions
 
-```applescript
-tell application id "Cere"
-    tell front document
-        -- if/else
-        evaluate noteRef with "if($Prototype==\"Task\"){$Status}else{\"N/A\"}"
+```
+// if/else -- used in expressions (returns a value)
+evaluate(document: "MyDoc", expression: "if($Prototype==\"Task\"){$Status}else{\"N/A\"}", note: "/path/to/note")
 
-        -- Nested conditions
-        evaluate noteRef with "if($Priority>3){\"High\"}else{if($Priority>1){\"Medium\"}else{\"Low\"}}"
-    end tell
-end tell
+// Nested conditions (no else-if -- must nest if inside else)
+evaluate(document: "MyDoc", expression: "if($Score>80){\"High\"}else{if($Score>50){\"Medium\"}else{\"Low\"}}", note: "/path/to/note")
 ```
 
 ## Conditional Actions
 
-```applescript
-tell application id "Cere"
-    tell front document
-        -- if/else in actions
-        act on noteRef with "if($WordCount>100){$Badge=\"long\"}else{$Badge=\"short\"}"
+```
+// if/else in action code -- used with the do tool
+do(document: "MyDoc", action: "if($WordCount>100){$Badge=\"long\"}else{$Badge=\"short\"}", note: "/path/to/note")
 
-        -- Apply conditionally
-        act on noteRef with "if($Tags.contains(\"important\")){$Color=\"red\"}"
-    end tell
-end tell
+// Apply conditionally
+do(document: "MyDoc", action: "if($Tags.contains(\"important\")){$Color=\"red\"}", note: "/path/to/note")
 ```
 
 ## Date Functions
 
-```applescript
-tell application id "Cere"
-    tell front document
-        -- Current date/time
-        evaluate noteRef with "date(\"today\")"
-        evaluate noteRef with "date(\"now\")"
-        evaluate noteRef with "date(\"yesterday\")"
-        evaluate noteRef with "date(\"tomorrow\")"
+```
+// Current date/time
+evaluate(document: "MyDoc", expression: "date(\"today\")", note: "/path/to/note")
+evaluate(document: "MyDoc", expression: "date(\"now\")", note: "/path/to/note")
+evaluate(document: "MyDoc", expression: "date(\"yesterday\")", note: "/path/to/note")
+evaluate(document: "MyDoc", expression: "date(\"tomorrow\")", note: "/path/to/note")
 
-        -- Date formatting (Tinderbox format codes, NOT ICU)
-        evaluate noteRef with "$Created.format(\"y-M0-D\")"      -- 2026-03-02
-        evaluate noteRef with "$Modified.format(\"W, MM d, y\")"  -- Monday, March 2, 2026
+// Date formatting (Tinderbox format codes, NOT ICU)
+evaluate(document: "MyDoc", expression: "$Created.format(\"y-M0-D0\")", note: "/path/to/note")       # 2026-03-02
+evaluate(document: "MyDoc", expression: "$Modified.format(\"W, MM d, y\")", note: "/path/to/note")   # Monday, March 2, 2026
 
-        -- Date arithmetic
-        evaluate noteRef with "$Created + days(7)" -- 7 days after created
+// Date arithmetic
+evaluate(document: "MyDoc", expression: "$Created + days(7)", note: "/path/to/note")    # 7 days after created
 
-        -- Date comparison
-        evaluate noteRef with "$Modified > date(\"yesterday\")"
+// Date comparison -- returns "true" or ""
+evaluate(document: "MyDoc", expression: "$Modified > date(\"yesterday\")", note: "/path/to/note")
 
-        -- Set date attribute
-        act on noteRef with "$DueDate=date(\"next week\")"
-        act on noteRef with "$DueDate=date(\"2025-03-15\")"
-    end tell
-end tell
+// Set date attribute
+do(document: "MyDoc", action: "$DueDate=date(\"next week\")", note: "/path/to/note")
+do(document: "MyDoc", action: "$DueDate=date(\"2025-03-15\")", note: "/path/to/note")
 ```
 
 ### Date Format Codes
 
-Tinderbox uses its **own format codes** (not ICU/Unicode patterns). Use with `.format("codes")`.
+Tinderbox uses its **own format codes** (NOT ICU/Unicode patterns like `EEEE` or `yyyy`). Use with `.format("codes")`. Reference date: Tue, 29 Apr 2003 14:32:18 +0500.
 
-| Code | Produces | Example |
-|------|----------|---------|
-| **Complete formats** | | |
-| `L` | Local long date | April 29, 2003 |
-| `l` | Local short date | 4-29-03 |
-| `*` | RFC 822 | Tue, Apr 29 2003 14:32:00 +0500 |
-| `=` | ISO 8601 with time | 2023-04-29T14:32:18+05:00 |
-| `==` | ISO 8601 date only | 2023-04-29 |
-| `U` | Unix epoch (seconds) | 1051625520 |
-| `n` | Medium date + short time | 21 Jan 2020 at 17:12 |
-| **Day** | | |
-| `d` | Day, no padding | 9 |
-| `D` | Day, zero-padded | 09 |
-| `o` | Ordinal day | 2nd, 10th |
-| `w` | Weekday abbreviation | Tue |
-| `W` | Full weekday name | Tuesday |
-| **Month** | | |
-| `m` | Month, no padding | 4 |
-| `M0` | Month, zero-padded | 04 |
-| `M` | Month abbreviation | Apr |
-| `MM` | Full month name | April |
-| **Year** | | |
-| `y` | 4-digit year | 2026 |
-| `Y` | 2-digit year | 26 |
-| **Time** | | |
-| `t` | Local time format | 2:32 PM |
-| `h` | 24-hour, zero-padded | 14 |
-| `H` | 12-hour | 2 |
-| `mm` | Minutes, zero-padded | 32 |
-| `s` | Seconds, zero-padded | 18 |
-| `p` | AM/PM | PM |
+#### Preset Formats (use alone, not combined)
 
-Use `\` to escape a code as literal text. Examples:
+| Code | Description | Example Output |
+|------|-------------|----------------|
+| `L` | Local long date (locale-dependent) | `April 29, 2003` |
+| `l` | Local short date (lowercase L, not numeral 1) | `4-29-03` |
+| `*` | RFC 822 | `Tue, Apr 29 2003 14:32:00 +0500` |
+| `=` | ISO 8601 with time | `2003-04-29T14:32:18+05:00` |
+| `==` | ISO 8601 date only | `2003-04-29` |
+| `U` | Unix epoch (seconds since Jan 1, 1970) | `1051625520` |
+| `n` | Medium date + short time (locale-dependent) | `29 Apr 2003 at 14:32` |
+
+#### Day Codes
+
+| Code | Description | Example Output |
+|------|-------------|----------------|
+| `d` | Day of month, unpadded | `9` |
+| `D0` | Day of month, zero-padded (the `0` is the digit zero, not letter O) | `09` |
+| `o` | Day of month, ordinal | `2nd`, `10th` |
+| `w` | Weekday abbreviation | `Tue` |
+| `W` | Full weekday name | `Tuesday` |
+
+#### Month Codes
+
+| Code | Description | Example Output |
+|------|-------------|----------------|
+| `m` | Month number, unpadded | `4` |
+| `M0` | Month number, zero-padded (the `0` is the digit zero, not letter O) | `04` |
+| `M` | Month abbreviation | `Apr` |
+| `MM` | Full month name | `April` |
+
+#### Year Codes
+
+| Code | Description | Example Output |
+|------|-------------|----------------|
+| `y` | Four-digit year | `2003` |
+| `Y` | Two-digit year | `03` |
+
+#### Time Codes
+
+| Code | Description | Example Output |
+|------|-------------|----------------|
+| `t` | Local time format (locale-dependent) | `2:32 PM` |
+| `h` | Hour, 24-hour clock, zero-padded | `14` |
+| `H` | Hour, 12-hour clock, unpadded | `2` |
+| `mm` | Minutes, zero-padded | `32` |
+| `s` | Seconds, zero-padded (always `00` -- seconds cannot be set) | `00` |
+| `p` | AM/PM indicator | `PM` |
+
+#### Combining Codes
+
+Codes act as placeholders within a literal string. Any character that is NOT a recognized code passes through literally. Codes can be combined freely:
 
 ```
-$Created.format("y-M0-D")           -- 2026-03-02
-$Created.format("W, MM d, y")       -- Monday, March 2, 2026
-$Modified.format("y-M0-D h:mm p")   -- 2026-03-02 14:32 PM
-$Created.format("=")                -- ISO 8601
-$Created.format("o MM y")           -- 2nd March 2026
+$Created.format("y-M0-D0")           # 2003-04-29
+$Created.format("W, d MM y")         # Tuesday, 29 April 2003
+$Modified.format("y-M0-D0 h:mm p")   # 2003-04-29 14:32 PM
+$Created.format("H:mm p")            # 2:32 PM
+$Created.format("=")                 # ISO 8601
+$Created.format("o MM y")            # 29th April 2003
+$Created.format("==")                # 2003-04-29 (date only)
 ```
+
+#### Escaping Literal Characters
+
+Use `\` to prevent a character from being interpreted as a format code:
+
+```
+$Created.format("\da\y: D0")          # day: 29 (the d, a, y are escaped as literals)
+```
+
+> **CAUTION**: Any unrecognized character passes through literally, but any character that *happens* to match a code letter WILL be interpreted as that code. For example, `"Created on d/m/y"` would replace `d`, `m`, and `y` with date values, AND `t` with the local time. Escape with `\` any literal text that contains code letters.
 
 ## Action Commands
 
-These are used in `act on` only:
+These are used with the `do` tool:
 
-### linkTo — Create a link
+### linkTo -- Create a link
 
-```applescript
-tell application id "Cere"
-    tell front document
-        -- Basic link
-        act on noteRef with "linkTo(\"/path/to/target\")"
+```
+// Basic link
+do(document: "MyDoc", action: "linkTo(\"/path/to/target\")", note: "/path/to/source")
 
-        -- Typed link (type is auto-created if it doesn't exist)
-        act on noteRef with "linkTo(\"/path/to/target\", \"references\")"
-    end tell
-end tell
+// Typed link (type is auto-created if it doesn't exist)
+do(document: "MyDoc", action: "linkTo(\"/path/to/target\", \"references\")", note: "/path/to/source")
 ```
 
-### moveTo — Move a note
+### Move a note (set $Container)
 
-```applescript
-tell application id "Cere"
-    tell front document
-        act on noteRef with "moveTo(\"/Destination/Container\")"
-    end tell
-end tell
+```
+do(document: "MyDoc", action: "$Container=\"/Destination/Container\"", note: "/path/to/note")
 ```
 
-### create — Create a child note
+### create -- Create a child note
 
-```applescript
-tell application id "Cere"
-    tell front document
-        act on noteRef with "create(\"ChildName\")"
-    end tell
-end tell
 ```
-
-### indent / outdent — Change nesting
-
-```applescript
-tell application id "Cere"
-    tell front document
-        act on noteRef with "indent"
-        act on noteRef with "outdent"
-    end tell
-end tell
+do(document: "MyDoc", action: "create(\"ChildName\")", note: "/path/to/parent")
 ```
 
 ## Designators
 
-Designators reference notes relative to the current context. Used in both `evaluate` and `act on`.
+Designators reference notes relative to the current context. Used in both expressions and action code.
 
 ### Item Designators (single note)
 
 Access another note's attributes: `$Attr(designator)`
 
-```applescript
-tell application id "Cere"
-    tell front document
-        evaluate noteRef with "$Name(parent)"        -- parent's name
-        evaluate noteRef with "$Color(child[0])"     -- first child's color
-        evaluate noteRef with "$Name(\"Some Note\")" -- named note's attribute
-        evaluate noteRef with "$Name(\"/path/to/note\")" -- by path
-    end tell
-end tell
+```
+evaluate(document: "MyDoc", expression: "$Name(parent)", note: "/path/to/note")            # parent's name
+evaluate(document: "MyDoc", expression: "$Color(child[0])", note: "/path/to/note")         # first child's color
+evaluate(document: "MyDoc", expression: "$Name(\"/path/to/other\")", note: "/path/to/note") # by path
 ```
 
 | Designator | Description |
@@ -375,79 +343,55 @@ Used with collection functions: `collect(group, expr)`, `sum(group, expr)`, etc.
 | `all` | All notes in document |
 | `find(condition)` | Notes matching condition |
 
-```applescript
-tell application id "Cere"
-    tell front document
-        evaluate noteRef with "collect(children,$Name)"
-        evaluate noteRef with "collect(find($Tags.contains(\"important\")),$Name)"
-    end tell
-end tell
+```
+evaluate(document: "MyDoc", expression: "collect(children,$Name)", note: "/path/to/note")
+evaluate(document: "MyDoc", expression: "collect(find($Tags.contains(\"important\")),$Name)", note: "/path/to/note")
 ```
 
 > See **[Action Functions Reference](action-functions.md#15-designators)** for the complete designator list.
 
 ## Agent Query Syntax
 
-Agent queries use Tinderbox expressions. Set them via `act on` on the agent:
+Agent queries use Tinderbox expressions. Set them via the `set_value` tool:
 
-```applescript
-tell application id "Cere"
-    tell front document
-        -- Find notes with a specific prototype
-        act on agentRef with "$AgentQuery='$Prototype==\"Task\"'"
+```
+// Find notes with a specific prototype
+set_value(document: "MyDoc", notes: "/path/to/agent", attribute: "AgentQuery", value: "$Prototype==\"Task\"")
 
-        -- Find notes modified recently
-        act on agentRef with "$AgentQuery='$Modified > date(\"yesterday\")'"
+// Find notes modified recently
+set_value(document: "MyDoc", notes: "/path/to/agent", attribute: "AgentQuery", value: "$Modified > date(\"yesterday\")")
 
-        -- Find notes with specific tags
-        act on agentRef with "$AgentQuery='$Tags.contains(\"research\")'"
+// Find notes with specific tags
+set_value(document: "MyDoc", notes: "/path/to/agent", attribute: "AgentQuery", value: "$Tags.contains(\"research\")")
 
-        -- Find notes inside a container
-        act on agentRef with "$AgentQuery='inside(\"Projects\")'"
+// Find notes inside a container
+set_value(document: "MyDoc", notes: "/path/to/agent", attribute: "AgentQuery", value: "inside(\"Projects\")")
 
-        -- Compound query
-        act on agentRef with "$AgentQuery='$Prototype==\"Task\" & $Checked==false'"
-
-        -- Simple query without inner quotes
-        act on agentRef with "$AgentQuery=\"$WordCount>50\""
-    end tell
-end tell
+// Compound query
+set_value(document: "MyDoc", notes: "/path/to/agent", attribute: "AgentQuery", value: "$Prototype==\"Task\" & $Checked==false")
 ```
 
 ## Agent Action Syntax
 
-Actions that run on each note collected by an agent:
+Action code that runs on each note collected by an agent:
 
-```applescript
-tell application id "Cere"
-    tell front document
-        -- Color collected notes
-        act on agentRef with "$AgentAction='$Color=\"blue\"'"
+```
+// Color collected notes
+set_value(document: "MyDoc", notes: "/path/to/agent", attribute: "AgentAction", value: "$Color=\"blue\"")
 
-        -- Set a badge
-        act on agentRef with "$AgentAction='$Badge=\"flag\"'"
-    end tell
-end tell
+// Set a badge
+set_value(document: "MyDoc", notes: "/path/to/agent", attribute: "AgentAction", value: "$Badge=\"flag\"")
 ```
 
-## Quoting Guide for AppleScript
+## Quoting Rules
 
-When embedding Tinderbox expressions in AppleScript strings passed through the shell, you must manage multiple quoting layers:
+Tinderbox action code has **NO escape sequences** -- `\"` does NOT work inside Tinderbox strings. Instead:
 
-1. **Shell layer**: Use a heredoc (`<<'APPLESCRIPT'`) to avoid shell escaping entirely
-2. **AppleScript string layer**: Use double quotes for strings, `\"` for literal quotes inside
-3. **Tinderbox expression layer**: For action-holding attributes with nested quotes, use Tinderbox single-quoted strings (`'...'`) where `"` is literal — Tinderbox does NOT support quote escaping, so `\"` inside a Tinderbox string does not work
+- Use **single quotes** when value contains double quotes: `$Text='He said "hello"'`
+- Use **double quotes** when value contains apostrophes: `$Text="it's fine"`
+- Use **`+` concatenation** when value contains both quote types
 
-```applescript
--- Simple — no inner quotes needed
-evaluate noteRef with "$Name"
-
--- Inner quotes — escape with backslash (AppleScript layer only)
-act on noteRef with "$Color=\"red\""
-
--- Nested quotes — use Tinderbox single-quoted strings
-act on agentRef with "$AgentQuery='$Prototype==\"Task\"'"
-```
+For simple attribute assignments, prefer the `set_value` tool which handles quoting automatically.
 
 ### Boolean Return Values
 
@@ -455,21 +399,7 @@ Tinderbox boolean results from comparisons and functions:
 - **True** = `"true"` (string)
 - **False** = `""` (empty string), NOT `"false"`
 
-Exception: `.contains()` on strings returns a **1-based position** (integer), not a boolean. On sets, `.contains()` returns position or empty string.
-
-### Heredoc Pattern for Complex Expressions
-
-```bash
-osascript <<'APPLESCRIPT'
-tell application id "Cere"
-    tell front document
-        set noteRef to note 1
-        -- act on called on the note, not the app
-        act on noteRef with "$AgentQuery='$Prototype==\"Task\" & $Checked==false'"
-    end tell
-end tell
-APPLESCRIPT
-```
+Exception: `.contains()` on strings returns a **1-based position** (integer) or `0` if not found. On sets, `.contains()` returns 1-based position or `""` (empty string) if not found.
 
 ---
 
@@ -477,6 +407,5 @@ APPLESCRIPT
 
 For deeper coverage, see:
 
-- **[Action Functions Reference](action-functions.md)** — Complete catalog of 600+ action code functions by category
-- **[Action-Holding Attributes](action-attributes.md)** — The 12 system attributes that hold executable action code ($Rule, $OnAdd, $DisplayExpression, etc.)
-- **[AppleScript API Reference](applescript-api.md)** — AppleScript bridge layer: make, delete, move, evaluate, act on
+- **[Action Functions Reference](action-functions.md)** -- Complete catalog of 300+ action code functions by category
+- **[Action-Holding Attributes](action-attributes.md)** -- The 12 system attributes that hold executable action code ($Rule, $OnAdd, $DisplayExpression, etc.)

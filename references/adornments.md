@@ -1,5 +1,7 @@
 # Tinderbox Map Adornments Reference
 
+> Examples include the required `document` parameter. Replace `"MyDoc"` with your document name.
+
 Adornments are visual background elements exclusive to Map view that sit behind all notes. They provide colored, labeled regions to organize the visual space. They are one of the four fundamental note types in Tinderbox (note, alias, agent, adornment).
 
 ## Creating Adornments
@@ -10,7 +12,7 @@ Use the `create_note` tool with `kind: "adornment"`:
 create_note(document: "MyDoc", name: "My Region", kind: "adornment")
 ```
 
-After creation, configure with `set_value` or `do`:
+After creation, configure with the `set_value` tool or the `do` tool:
 
 ```
 set_value(document: "MyDoc", notes: "/My Region", attribute: "Color", value: "blue")
@@ -62,7 +64,7 @@ Setting `$AgentQuery` on an adornment makes it a "smart adornment":
 - Query scope is **the current map only** (not the whole document like agents)
 - Matching notes are **moved** (not aliased) onto the adornment
 - Notes that stop matching are moved **off** alongside it (NOT restored to original positions)
-- Matched notes fire the adornment's `$OnAdd` code
+- Matched notes fire the adornment's `$OnAdd` action code
 
 ### Differences from Agents
 
@@ -151,3 +153,11 @@ Uses Apple MapKit. Notes placed on geographic adornments auto-align to map coord
 - Reorder with forward/back commands
 - `$OutlineOrder` determines visual stacking (lower = on top)
 - Adornments are counted in `$OutlineOrder` but NOT in `$SiblingOrder`, `$ChildCount`, or `$DescendantCount`
+
+---
+
+## Cross-References
+
+- **[Action-Holding Attributes](action-attributes.md)** — `$OnAdd`, `$OnRemove`, `$AgentQuery` behavior
+- **[Expressions & Actions](expressions.md)** — Expression and action code syntax for smart adornment queries
+- **[System Containers](system-containers.md)** — `/Prototypes` container for adornment prototypes

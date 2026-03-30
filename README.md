@@ -4,7 +4,7 @@ A standalone MCP (Model Context Protocol) server for [Tinderbox](https://www.eas
 
 ## Requirements
 
-- [Tinderbox](https://www.eastgate.com/Tinderbox/) installed (any version)
+- [Tinderbox](https://www.eastgate.com/Tinderbox/) installed (version 11.6.0 or greater)
 - Ruby 3.1+ with Bundler
 
 ### Installing Ruby

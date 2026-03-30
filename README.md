@@ -1,4 +1,4 @@
-# tbx-mcp
+# An Enhanced Tinderbox MCP Server
 
 A standalone MCP (Model Context Protocol) server for [Tinderbox](https://www.eastgate.com/Tinderbox/) that provides 9 tools for reading, creating, and manipulating notes, links, and attributes via AppleScript. Unlike the MCP server bundled with Tinderbox, tbx-mcp runs as a separate process — making it usable from containers, remote environments, and any MCP-compatible client.
 
@@ -6,6 +6,28 @@ A standalone MCP (Model Context Protocol) server for [Tinderbox](https://www.eas
 
 - [Tinderbox](https://www.eastgate.com/Tinderbox/) installed (any version)
 - Ruby 3.1+ with Bundler
+
+### Installing Ruby
+
+If you don't have Ruby installed (or need a newer version), install it via [Homebrew](https://brew.sh/):
+
+```bash
+brew install ruby
+```
+
+After installation, add Homebrew's Ruby to your PATH by following the instructions Homebrew prints. Typically:
+
+```bash
+echo 'export PATH="/opt/homebrew/opt/ruby/bin:$PATH"' >> ~/.zshrc
+source ~/.zshrc
+```
+
+Verify the installation:
+
+```bash
+ruby --version
+gem install bundler
+```
 
 ## Installation
 

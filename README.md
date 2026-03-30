@@ -95,7 +95,7 @@ After saving, restart Claude Code or run `/mcp` to reconnect.
 
 ### Verify
 
-Once connected, the server exposes 9 tools and 5 reference resources. In Claude Code you can verify with `/mcp` — you should see `tinderbox` listed with its tools.
+Once connected, the server exposes 10 tools and 6 reference resources. In Claude Code you can verify with `/mcp` — you should see `tinderbox` listed with its tools.
 
 ## Tools
 
@@ -112,6 +112,9 @@ All tools that operate on a document require a `document` parameter (the documen
 | `do` | Execute Tinderbox action code on one or more notes |
 | `evaluate` | Evaluate a Tinderbox expression in the context of a note |
 | `get_view` | Capture a screenshot of the document's current view |
+| `get_reference` | Retrieve detailed Tinderbox reference documentation by topic |
+
+The `get_reference` tool provides on-demand access to detailed documentation. Available topics: `action-attributes`, `action-functions`, `adornments`, `export-codes`, `expressions`, `system-containers`.
 
 ## Resources
 

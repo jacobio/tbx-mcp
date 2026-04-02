@@ -477,7 +477,8 @@ Only works with `$Text` attribute:
 | `createAlias(path)` | Create alias |
 | `createAdornment(name)` | Create adornment |
 | `createAttribute(name,type)` | Create user attribute |
-| `createLink(source,dest,type)` | Create link |
+| `createLink(source,dest,type)` | Create note-level link |
+| `createTextLink(source,dest,regex[,linkType,guard])` | Create text link anchored to matched text |
 
 ### Links (the `do` tool only)
 
@@ -485,6 +486,7 @@ Only works with `$Text` attribute:
 |----------|-------------|
 | `linkTo(path[,type])` | Create outbound link |
 | `linkFrom(path[,type])` | Create inbound link |
+| `createTextLink(source,dest,regex[,linkType,guard])` | Create text link — anchors to first regex match in source `$Text`. If regex doesn't match, no link is created. `guard` is a Storyspace guard expression (optional). |
 | `unlink(path)` | Remove link |
 | `unlinkTo(path)` | Remove outbound link |
 | `unlinkFrom(path)` | Remove inbound link |

@@ -49,6 +49,9 @@ class EvaluateTest < TinderboxIntegrationTest
   end
 
   def test_evaluate_without_note_uses_first_note
+    # Ensure at least one note exists
+    create_test_note("EvalDefault")
+
     response = TinderboxMCP::Evaluate.call(
       document: @test_document_name,
       expression: "$Name",

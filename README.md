@@ -1,6 +1,6 @@
 # An Enhanced Tinderbox MCP Server
 
-A standalone MCP (Model Context Protocol) server for [Tinderbox](https://www.eastgate.com/Tinderbox/) that provides 9 tools for reading, creating, and manipulating notes, links, and attributes via AppleScript. Unlike the MCP server bundled with Tinderbox, tbx-mcp runs as a separate process — making it usable from containers, remote environments, and any MCP-compatible client.
+A standalone MCP (Model Context Protocol) server for [Tinderbox](https://www.eastgate.com/Tinderbox/) that provides 10 tools for reading, creating, and manipulating notes, links, and attributes via AppleScript. Unlike the MCP server bundled with Tinderbox, tbx-mcp runs as a separate process—making it usable from containers, remote environments, and any MCP-compatible client.
 
 ## Requirements
 
@@ -22,7 +22,7 @@ echo 'export PATH="/opt/homebrew/opt/ruby/bin:$PATH"' >> ~/.zshrc
 source ~/.zshrc
 ```
 
-Verify the installation:
+Verify the installation and install the Bundler Gem:
 
 ```bash
 ruby --version
@@ -107,7 +107,8 @@ All tools that operate on a document require a `document` parameter (the documen
 | `open_document` | Open a `.tbx` file from a path on disk |
 | `get_notes` | Get notes by path or query, with optional attribute values |
 | `create_note` | Create one or more notes (note, agent, or adornment) |
-| `create_link` | Create a link between two notes with optional link type |
+| `create_link` | Create a note-level link between two notes with optional link type |
+| `create_text_link` | Create a text link anchored to a regex match in the source note's text |
 | `set_value` | Set an attribute value on one or more notes |
 | `do` | Execute Tinderbox action code on one or more notes |
 | `evaluate` | Evaluate a Tinderbox expression in the context of a note |

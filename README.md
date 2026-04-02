@@ -1,6 +1,6 @@
 # An Enhanced Tinderbox MCP Server
 
-A standalone MCP (Model Context Protocol) server for [Tinderbox](https://www.eastgate.com/Tinderbox/) that provides 10 tools for reading, creating, and manipulating notes, links, and attributes via AppleScript. Unlike the MCP server bundled with Tinderbox, tbx-mcp runs as a separate process—making it usable from containers, remote environments, and any MCP-compatible client.
+A standalone MCP (Model Context Protocol) server for [Tinderbox](https://www.eastgate.com/Tinderbox/) that provides 11 tools for reading, creating, and manipulating notes, links, and attributes via AppleScript. Unlike the MCP server bundled with Tinderbox, tbx-mcp runs as a separate process—making it usable from containers, remote environments, and any MCP-compatible client.
 
 ## Requirements
 
@@ -95,7 +95,7 @@ After saving, restart Claude Code or run `/mcp` to reconnect.
 
 ### Verify
 
-Once connected, the server exposes 10 tools and 6 reference resources. In Claude Code you can verify with `/mcp` — you should see `tinderbox` listed with its tools.
+Once connected, the server exposes 11 tools and 6 reference resources. In Claude Code you can verify with `/mcp` — you should see `tinderbox` listed with its tools.
 
 ## Tools
 

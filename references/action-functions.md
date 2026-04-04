@@ -470,15 +470,17 @@ Only works with `$Text` attribute:
 
 ### Creation (the `do` tool only)
 
-| Function | Description |
-|----------|-------------|
-| `create(name)` | Create child note (see path syntax below) |
-| `createAgent([container,] name)` | Create agent (set $AgentQuery separately) |
-| `createAlias(path)` | Create alias |
-| `createAdornment(name)` | Create adornment |
-| `createAttribute(name,type)` | Create user attribute |
-| `createLink(source,dest,type)` | Create note-level link |
-| `createTextLink(source,dest,regex[,linkType,guard])` | Create text link anchored to matched text |
+`create()`, `createAgent()`, `createAlias()`, and `createAdornment()` all **return the path** of the created object. Capture this to immediately set attributes on the new item.
+
+| Function | Returns | Description |
+|----------|---------|-------------|
+| `create(name)` | Path | Create child note (see path syntax below) |
+| `createAgent([container,] name)` | Path | Create agent (set $AgentQuery separately) |
+| `createAlias(path)` | Path | Create alias |
+| `createAdornment(name)` | Path | Create adornment |
+| `createAttribute(name,type)` | — | Create user attribute |
+| `createLink(source,dest,type)` | — | Create note-level link |
+| `createTextLink(source,dest,regex[,linkType,guard])` | — | Create text link anchored to matched text |
 
 ### Links (the `do` tool only)
 
@@ -503,8 +505,8 @@ Only works with `$Text` attribute:
 | `inside(path)` | `"true"` or `""` | Is inside container |
 | `first(item[, childrenNum])` | Note | First child |
 | `last(item[, childrenNum])` | Note | Last child |
-| `distance(startItem, endItem)` | Number | Tree distance between two notes |
-| `distanceTo(path)` | Number | Map distance |
+| `distance(startItem, endItem)` | Number | Map distance between object centres (Tinderbox map units) |
+| `distanceTo(item1, item2)` | Number | Geographical distance between two Lat/Long positions |
 
 ### Query (the `evaluate` tool)
 
@@ -525,6 +527,9 @@ do(document: "MyDoc", action: "create(\"/Hints/Highlighters/MyHighlighter\")", n
 
 // Create relative child
 do(document: "MyDoc", action: "create(\"ChildName\")", note: "/path/to/note")
+
+// Capture returned path to immediately set attributes on the new object
+do(document: "MyDoc", action: "var:string vPath=create(\"NewNote\");$Color(vPath)=\"red\";$AgentQuery(vPath)=\"$Prototype==Task\"", note: "/path/to/note")
 
 // Set attributes on path-created notes using $Attr("/path") syntax
 do(document: "MyDoc", action: "$Text(\"/Hints/Highlighters/MyHighlighter\")=\"content here\"", note: "/path/to/note")

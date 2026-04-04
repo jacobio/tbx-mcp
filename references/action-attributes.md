@@ -12,9 +12,9 @@ All can be read via the `evaluate` tool and written via the `set_value` tool or 
 
 | Attribute | Trigger | Scope | Scriptable? |
 |-----------|---------|-------|-------------|
-| `$Rule` | Every agent cycle (~2-5s) | The note itself | Yes |
-| `$Edict` | Periodically (~hourly) | The note itself | No (cycle too long) |
-| `$OnAdd` | Note added to container | The added child | Yes |
+| `$Rule` | Every agent cycle (~2-5s) + document load | The note itself | Yes |
+| `$Edict` | Periodically (~hourly) + document load; also on Displayed Attributes edit | The note itself | No (cycle too long) |
+| `$OnAdd` | Note added to container + document load | The added child | Yes |
 | `$OnRemove` | Note removed from container | The removed note | Possible |
 | `$OnJoin` | Note joins composite | The joining note | No (composites need UI) |
 | `$OnPaste` | Note pasted (same or different doc) | The pasted note | No (paste needs UI) |
@@ -31,7 +31,7 @@ All can be read via the `evaluate` tool and written via the `set_value` tool or 
 
 ### $Rule
 
-**Trigger**: Fires every agent cycle (approximately every 2-5 seconds, depending on document complexity).
+**Trigger**: Fires every agent cycle (approximately every 2-5 seconds, depending on document complexity). Also fires on document load.
 
 **Scope**: Runs in the context of the note that holds the rule. `this` refers to the note itself.
 
@@ -71,7 +71,7 @@ set_value(document: "MyDoc", notes: "/path/to/note", attribute: "RuleDisabled", 
 
 ### $Edict
 
-**Trigger**: Fires periodically, roughly hourly (much less frequently than rules).
+**Trigger**: Fires periodically, roughly hourly (much less frequently than rules). Also fires on document load and when attributes are edited in the Displayed Attributes table (the latter trigger is unlikely to be relevant for MCP work).
 
 **Scope**: Same as `$Rule` — runs on the note itself.
 
@@ -87,7 +87,7 @@ set_value(document: "MyDoc", notes: "/path/to/note", attribute: "Edict", value: 
 
 ### $OnAdd
 
-**Trigger**: Fires when a note is added as a child of the container holding this attribute.
+**Trigger**: Fires when a note is added as a child of the container holding this attribute. Also fires on document load (re-evaluates for existing children).
 
 **Scope**: `this` refers to the **newly added child**, not the container. The action runs on the child.
 
